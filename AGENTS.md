@@ -57,3 +57,16 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
 - Use the `inject()` function instead of constructor injection
+
+## Backend Integration
+
+- Treat [`docs/ANGULAR_HANDOFF.md`](docs/ANGULAR_HANDOFF.md) as the primary reference for documented backend HTTP contracts.
+- Use [`docs/FRONTEND_INTEGRATION.md`](docs/FRONTEND_INTEGRATION.md) as a complementary reference; it may be outdated relative to the handoff.
+- Treat [`docs/BACKEND_SPEC.md`](docs/BACKEND_SPEC.md) as planned functional requirements, not evidence that endpoints or features are implemented.
+- Do not invent endpoints, DTOs, roles, permissions, reservation states, or business rules. Follow the documented backend contract.
+- If the reference documents disagree, identify the discrepancy and request verification before implementing the affected functionality. Do not resolve technical discrepancies by inference.
+- Respect the current contract's HTTP session and CSRF mechanisms. Do not introduce JWT or store credentials, session tokens, or equivalent secrets in `localStorage`.
+- Backend authorization and critical business rules are authoritative. Frontend guards and validation are for user experience and do not replace backend enforcement.
+- Do not modify the backend repository from this project.
+- Do not add dependencies without a clear justification.
+- Review changes and run the relevant checks. Do not create commits or push changes without explicit authorization.
