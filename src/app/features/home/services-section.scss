@@ -1,0 +1,109 @@
+:host {
+  display: block;
+}
+
+.services {
+  padding-block: 4.5rem;
+}
+
+.sample-note {
+  margin: 1.75rem 0 1rem;
+  padding: 0.85rem 1rem;
+  border-left: 2px solid var(--color-bronze);
+  background: rgb(212 166 108 / 7%);
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem;
+}
+
+.service-card {
+  display: flex;
+  min-height: 15rem;
+  flex-direction: column;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: linear-gradient(145deg, var(--color-surface-raised), var(--color-surface));
+  transition: border-color 160ms ease;
+}
+
+.service-card:hover {
+  border-color: rgb(212 166 108 / 48%);
+}
+
+.service-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.service-card__number {
+  color: var(--color-bronze);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.service-card__mark {
+  color: var(--color-bronze);
+  font-size: 1.15rem;
+}
+
+.service-card__details {
+  margin-block: auto;
+  padding-block: 1.5rem;
+}
+
+.service-card h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.service-card__details p {
+  margin: 0.65rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
+.service-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.45rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: 0.72rem;
+}
+
+@media (min-width: 40rem) {
+  .services {
+    padding-block: 5.5rem;
+  }
+
+  .service-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .service-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .service-card {
+    min-height: 17rem;
+    padding: 1.5rem;
+  }
+}

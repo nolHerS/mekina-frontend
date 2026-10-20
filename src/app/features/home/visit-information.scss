@@ -1,0 +1,84 @@
+:host {
+  display: block;
+}
+
+.visit {
+  padding-block: 4.5rem;
+}
+
+.section-heading--visit {
+  margin-bottom: 1.75rem;
+}
+
+.visit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem;
+}
+
+.visit-card {
+  min-height: 13rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background:
+    radial-gradient(ellipse at 100% 0%, rgb(151 105 59 / 10%), transparent 55%),
+    var(--color-surface);
+  scroll-margin-top: 6rem;
+}
+
+.visit-card__number {
+  display: block;
+  margin-bottom: 1.7rem;
+  color: var(--color-bronze);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.visit-card h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+.visit-card p {
+  margin: 0.65rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
+.visit-card__status {
+  display: inline-block;
+  margin-top: 1.2rem;
+  color: var(--color-bronze);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (min-width: 40rem) {
+  .visit {
+    padding-block: 5.5rem;
+  }
+
+  .visit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .visit-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .visit-card {
+    min-height: 14rem;
+    padding: 1.5rem;
+  }
+}

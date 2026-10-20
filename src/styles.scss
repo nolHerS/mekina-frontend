@@ -25,6 +25,7 @@
   --focus-ring: 0 0 0 3px var(--color-ink), 0 0 0 5px var(--color-bronze);
 
   font-family: var(--font-body);
+  line-height: 1.5;
   background: var(--color-ink);
   color: var(--color-cream);
   font-synthesis: none;
@@ -88,6 +89,77 @@ button {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.section-wrap {
+  width: min(var(--content-width), calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0;
+  color: var(--color-bronze);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.eyebrow > span {
+  width: 1.4rem;
+  height: 1px;
+  flex: 0 0 auto;
+  background: currentColor;
+}
+
+.section-heading {
+  display: grid;
+  gap: 1rem;
+}
+
+.section-heading h2 {
+  max-width: 46rem;
+  margin: 1.25rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 9vw, 4.25rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1.04;
+}
+
+.section-heading h2 em {
+  color: var(--color-bronze);
+  font-weight: 400;
+}
+
+.section-heading__aside {
+  max-width: 28rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+@media (min-width: 40rem) {
+  .section-wrap {
+    width: min(var(--content-width), calc(100% - 3rem));
+  }
+}
+
+@media (min-width: 60rem) {
+  .section-heading {
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 25rem);
+    align-items: end;
+    gap: 2rem;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(3.5rem, 5vw, 4.5rem);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

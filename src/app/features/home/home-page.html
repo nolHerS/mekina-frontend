@@ -1,112 +1,72 @@
 <app-site-header />
 
-<main id="contenido">
-  <section class="hero" id="inicio" aria-labelledby="hero-title">
+<main id="contenido" tabindex="-1">
+  <section class="hero" id="inicio" aria-labelledby="hero-title" tabindex="-1">
     <div class="hero__inner">
       <div class="hero__copy">
         <p class="eyebrow"><span aria-hidden="true"></span> Barbería Mekina</p>
-        <h1 id="hero-title">Tu estilo.<br><span>Nuestra precisión.</span></h1>
+        <h1 id="hero-title">Tu estilo.<br /><span>Nuestra precisión.</span></h1>
         <p class="hero__intro">
-          Tradición en el oficio. Atención al detalle. Un espacio para sentirte
-          bien con quien eres.
+          Cuidado, carácter y atención al detalle. Ven a encontrar tu próximo estilo.
         </p>
         <div class="hero__actions">
           <a class="button button--primary" href="#mi-cita">
             Reservar cita <span aria-hidden="true">↗</span>
           </a>
-          <a class="button button--text" href="#servicios">
+          <a class="button button--secondary" href="#servicios">
             Ver servicios <span aria-hidden="true">↓</span>
           </a>
         </div>
       </div>
 
-      <div class="hero__art" aria-hidden="true">
-        <div class="hero__art-ring"></div>
-        <div class="hero__art-letter">M</div>
-        <div class="hero__art-caption">
-          <span>OFICIO</span>
-          <span class="hero__art-line"></span>
-          <span>CARÁCTER</span>
-        </div>
-      </div>
-
-      <a class="hero__scroll" href="#servicios">
-        <span class="hero__scroll-line" aria-hidden="true"></span>
-        Descubre Mekina
-      </a>
+      <figure class="hero__visual" aria-labelledby="hero-visual-caption">
+        <img
+          class="hero__photo"
+          ngSrc="/images/mekina_fondo.png"
+          width="975"
+          height="1612"
+          sizes="(min-width: 960px) 42vw, (min-width: 640px) 80vw, calc(100vw - 32px)"
+          alt="Un barbero trabajando en un corte dentro de la barbería"
+          priority
+        />
+        <figcaption class="hero__visual-caption" id="hero-visual-caption">
+          <span>Atención al detalle</span>
+          <span>Barbería Mekina</span>
+        </figcaption>
+      </figure>
     </div>
   </section>
 
-  <section class="services section-wrap" id="servicios" aria-labelledby="services-title">
-    <div class="section-heading">
-      <div>
-        <p class="eyebrow"><span aria-hidden="true"></span> El cuidado empieza aquí</p>
-        <h2 id="services-title">Hecho para <em>tu estilo.</em></h2>
-      </div>
-      <p class="section-heading__aside">
-        Cada detalle cuenta. Encuentra el servicio que mejor va contigo.
-      </p>
-    </div>
+  <app-services-section />
+  <app-visit-information />
 
-    <p class="sample-note">
-      Servicios de muestra para esta primera versión. Precios, duración y oferta
-      final pendientes de confirmación.
-    </p>
-
-    <div class="service-list">
-      @for (service of services; track service.number) {
-        <article class="service-card">
-          <span class="service-card__number">{{ service.number }}</span>
-          <div class="service-card__details">
-            <h3>{{ service.name }}</h3>
-            <p>{{ service.description }}</p>
-          </div>
-          <div class="service-card__meta">
-            <span>{{ service.duration }}</span>
-            <span>Precio por confirmar</span>
-          </div>
-          <span class="service-card__arrow" aria-hidden="true">↗</span>
-        </article>
-      }
-    </div>
-  </section>
-
-  <section class="visit section-wrap" aria-label="Información para tu visita">
-    <article class="visit-card" id="horarios">
-      <p class="eyebrow"><span aria-hidden="true"></span> Para tener en cuenta</p>
-      <h2>Tu tiempo,<br><em>bien cuidado.</em></h2>
-      <p>Estamos preparando nuestros horarios de atención. Pronto compartiremos los detalles.</p>
-      <a class="text-link" href="#mi-cita">Consultar mi cita <span aria-hidden="true">↗</span></a>
-    </article>
-
-    <article class="visit-card visit-card--location" id="ubicacion">
-      <p class="eyebrow"><span aria-hidden="true"></span> Encuéntranos</p>
-      <h2>Un lugar<br><em>para ti.</em></h2>
-      <p>La dirección y los datos para llegar estarán disponibles muy pronto.</p>
-      <a class="text-link" href="#contacto">Ver información <span aria-hidden="true">↗</span></a>
-      <span class="location-mark" aria-hidden="true">M</span>
-    </article>
-  </section>
-
-  <section class="appointment section-wrap" id="mi-cita" aria-labelledby="appointment-title">
+  <section
+    class="appointment section-wrap"
+    id="mi-cita"
+    aria-labelledby="appointment-title"
+    tabindex="-1"
+  >
     <div>
       <p class="eyebrow"><span aria-hidden="true"></span> Muy pronto</p>
-      <h2 id="appointment-title">Tu próxima cita<br><em>empieza aquí.</em></h2>
+      <h2 id="appointment-title">Tu próxima cita<br /><em>empieza aquí.</em></h2>
     </div>
     <div class="appointment__info">
       <p>
-        Estamos preparando la información para que puedas reservar y consultar
-        tus citas. Por ahora, la reserva online aún no está disponible.
+        La reserva online aún no está disponible. Añadiremos aquí la información
+        para solicitar y consultar tus citas cuando el servicio esté preparado.
       </p>
-      <a class="button button--outline" href="#contacto">
-        Información de contacto <span aria-hidden="true">↓</span>
+      <a class="button button--secondary" href="#contacto">
+        Ver contacto <span aria-hidden="true">↓</span>
       </a>
     </div>
   </section>
 </main>
 
-<footer class="site-footer section-wrap" id="contacto">
-  <a class="site-footer__brand" href="#inicio">BARBERÍA <strong>MEKINA</strong></a>
-  <p>Canales de contacto en preparación.</p>
-  <a class="site-footer__top" href="#inicio">Volver arriba ↑</a>
+<footer class="site-footer section-wrap">
+  <a class="site-footer__brand" href="#inicio" aria-label="Barbería Mekina, volver al inicio">
+    <span class="site-footer__monogram" aria-hidden="true">M</span>
+    <span>BARBERÍA <strong>MEKINA</strong></span>
+  </a>
+  <p>Tu estilo. Nuestra precisión.</p>
+  <a class="site-footer__top" href="#inicio">Volver al inicio <span aria-hidden="true">↑</span></a>
 </footer>

@@ -20,5 +20,17 @@ describe('SiteHeader', () => {
     fixture.nativeElement.querySelector('.primary-navigation a').click();
     fixture.detectChanges();
     expect(button.getAttribute('aria-expanded')).toBe('false');
+
+    button.click();
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    const firstLink = fixture.nativeElement.querySelector(
+      '.primary-navigation a',
+    ) as HTMLAnchorElement;
+    firstLink.focus();
+    firstLink.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(button.getAttribute('aria-expanded')).toBe('false');
   });
 });

@@ -1,11 +1,18 @@
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
 
-<header class="site-header">
+<header class="site-header" (keydown.escape)="handleEscape()">
   <div class="site-header__inner">
     <a class="brand" href="#inicio" aria-label="Barbería Mekina, inicio" (click)="closeMenu()">
-      <!-- Replace this monogram with the supplied logo at public/assets/brand/logo.svg when available. -->
-      <span class="brand__mark" aria-hidden="true">M</span>
-      <span class="brand__name"><span>BARBERÍA</span><strong>MEKINA</strong></span>
+      <span class="brand__logo-frame">
+        <img
+          class="brand__logo"
+          ngSrc="/images/logo_mekina.png"
+          width="814"
+          height="559"
+          alt=""
+          priority
+        />
+      </span>
     </a>
 
     <button
@@ -16,7 +23,11 @@
       [attr.aria-label]="menuOpen() ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'"
       (click)="menuOpen.update((isOpen) => !isOpen)"
     >
-      <span class="menu-toggle__icon" [class.menu-toggle__icon--open]="menuOpen()" aria-hidden="true">
+      <span
+        class="menu-toggle__icon"
+        [class.menu-toggle__icon--open]="menuOpen()"
+        aria-hidden="true"
+      >
         <span></span>
         <span></span>
       </span>
@@ -32,12 +43,9 @@
       @for (link of links; track link.href) {
         <a [href]="link.href" (click)="closeMenu()">{{ link.label }}</a>
       }
-      <a class="primary-navigation__mobile-cta" href="#mi-cita" (click)="closeMenu()">
-        Reservar cita <span aria-hidden="true">↗</span>
-      </a>
     </nav>
 
-    <a class="header-cta" href="#mi-cita">
+    <a class="header-cta" href="#mi-cita" (click)="closeMenu()">
       Reservar cita <span aria-hidden="true">↗</span>
     </a>
   </div>

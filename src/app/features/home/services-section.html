@@ -1,0 +1,39 @@
+<section
+  class="services section-wrap"
+  id="servicios"
+  aria-labelledby="services-title"
+  tabindex="-1"
+>
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow"><span aria-hidden="true"></span> El cuidado empieza aquí</p>
+      <h2 id="services-title">Elige tu <em>estilo.</em></h2>
+    </div>
+    <p class="section-heading__aside">
+      Un buen corte empieza con una buena conversación. Descubre lo que estamos preparando.
+    </p>
+  </div>
+
+  <p class="sample-note">
+    Contenido de muestra: servicios, precios y duraciones pendientes de confirmación.
+  </p>
+
+  <div class="service-grid">
+    @for (service of services; track service.number) {
+      <article class="service-card">
+        <div class="service-card__top">
+          <span class="service-card__number">{{ service.number }}</span>
+          <span class="service-card__mark" aria-hidden="true">✳</span>
+        </div>
+        <div class="service-card__details">
+          <h3>{{ service.name }}</h3>
+          <p>{{ service.description }}</p>
+        </div>
+        <div class="service-card__meta">
+          <span>{{ service.duration }}</span>
+          <span>Precio por confirmar</span>
+        </div>
+      </article>
+    }
+  </div>
+</section>
