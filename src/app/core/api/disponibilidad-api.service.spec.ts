@@ -38,6 +38,7 @@ describe('DisponibilidadApiService', () => {
     expect(request.request.params.get('profesionalId')).toBe(query.profesionalId);
     expect(request.request.params.get('desde')).toBe(query.desde);
     expect(request.request.params.get('hasta')).toBe(query.hasta);
+    expect(request.request.params.getAll('servicioId')).toEqual(query.servicioIds);
     request.flush({
       profesionalId: query.profesionalId,
       zonaHoraria: 'Europe/Madrid',
@@ -99,6 +100,7 @@ describe('DisponibilidadApiService', () => {
       .flush(expected);
 
     expect(response).toEqual(expected);
+    expect(response?.dias[0].inicios[0]).toBe('2026-10-20T10:00:00+02:00');
   });
 
   it('propagates an HTTP error', () => {

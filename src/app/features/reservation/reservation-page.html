@@ -11,6 +11,7 @@
     </header>
 
     <div class="reservation__layout">
+      <div class="reservation__choices">
       <section
         class="reservation__catalog"
         aria-labelledby="catalog-title"
@@ -69,27 +70,242 @@
         }
       </section>
 
+      <section
+        class="reservation__professionals"
+        aria-labelledby="professionals-title"
+        [attr.aria-busy]="professionalsState() === 'loading' ? 'true' : 'false'"
+      >
+        <div class="reservation__section-heading">
+          <h2 id="professionals-title">Profesionales disponibles</h2>
+        </div>
+
+        @if (professionalsState() === 'loading') {
+          <p class="reservation__state" role="status">Cargando profesionales…</p>
+        } @else if (professionalsState() === 'error') {
+          <div class="reservation__state reservation__state--error" role="alert">
+            <p>No se han podido cargar los profesionales. Inténtalo de nuevo más tarde.</p>
+            <button class="reservation__retry" type="button" (click)="loadProfessionals()">
+              Reintentar
+            </button>
+          </div>
+        } @else if (professionalsState() === 'empty') {
+          <p class="reservation__state" role="status">
+            No hay profesionales disponibles en este momento.
+          </p>
+        } @else {
+          <fieldset
+            class="professional-options"
+            aria-describedby="professional-selection-help"
+          >
+            <legend class="visually-hidden">Selecciona un profesional</legend>
+            <p class="reservation__limit" id="professional-selection-help">
+              Elige quién atenderá tu cita.
+            </p>
+            @for (professional of professionals(); track professional.id) {
+              <label
+                class="professional-option"
+                [class.professional-option--selected]="
+                  selectedProfessionalId() === professional.id
+                "
+              >
+                <input
+                  class="professional-option__radio"
+                  type="radio"
+                  name="profesional"
+                  [value]="professional.id"
+                  [checked]="selectedProfessionalId() === professional.id"
+                  (change)="selectProfessional(professional.id)"
+                />
+                <span class="professional-option__details">
+                  <span class="professional-option__name">{{ professional.nombre }}</span>
+                </span>
+              </label>
+            }
+          </fieldset>
+        }
+      </section>
+
+      <section
+        class="reservation__availability"
+        aria-labelledby="availability-title"
+        [attr.aria-busy]="availabilityState() === 'loading' ? 'true' : 'false'"
+      >
+        <div class="reservation__section-heading">
+          <h2 id="availability-title">Fecha y hora</h2>
+        </div>
+
+        <div class="reservation__date-picker">
+          <label for="reservation-date">Fecha de la cita</label>
+          <input
+            id="reservation-date"
+            class="reservation__retry reservation__date-input"
+            type="date"
+            [min]="dateMin()"
+            [max]="dateMax()"
+            [value]="selectedDate() ?? ''"
+            [disabled]="!canChooseDate()"
+            aria-describedby="reservation-date-help"
+            (change)="selectDate($event)"
+          />
+        </div>
+        <p class="reservation__limit" id="reservation-date-help">
+          Elige una fecha entre hoy y los próximos 29 días, según la zona horaria de
+          Europe/Madrid.
+        </p>
+
+        @if (!canChooseDate()) {
+          <p class="reservation__state" role="status">
+            Selecciona un servicio y un profesional para consultar horarios.
+          </p>
+        } @else if (availabilityState() === 'loading') {
+          <p class="reservation__state" role="status">Consultando horarios disponibles…</p>
+        } @else if (availabilityState() === 'error') {
+          <div class="reservation__state reservation__state--error" role="alert">
+            <p>No se han podido cargar los horarios. Inténtalo de nuevo.</p>
+            <button class="reservation__retry" type="button" (click)="loadAvailability()">
+              Reintentar
+            </button>
+          </div>
+        } @else if (availabilityState() === 'empty') {
+          <p class="reservation__state" role="status">
+            No hay disponibilidad para esta fecha.
+          </p>
+        } @else if (availabilityState() === 'success') {
+          @if (selectedDay(); as day) {
+            @if (day.inicios.length === 0) {
+              <p class="reservation__state" role="status">
+                No hay horarios disponibles para esta fecha.
+              </p>
+            } @else {
+              <p class="reservation__limit" id="available-times-help">
+                Horarios en hora de Europe/Madrid. Cada opción conserva el offset del servidor.
+              </p>
+              <div class="reservation__choices">
+              <section class="time-period" aria-labelledby="morning-title">
+                <h3 class="eyebrow" id="morning-title">Mañana</h3>
+                @if (morningStarts().length === 0) {
+                  <p class="reservation__limit" role="status">
+                    Sin horarios disponibles por la mañana.
+                  </p>
+                } @else {
+                  <div
+                    class="professional-options available-times"
+                    id="morning-time-options"
+                    role="group"
+                    aria-labelledby="morning-title"
+                  >
+                    @for (start of visibleMorningStarts(); track start) {
+                      <button
+                        class="professional-option time-option"
+                        type="button"
+                        [class.professional-option--selected]="selectedStart() === start"
+                        [attr.aria-pressed]="selectedStart() === start"
+                        (click)="selectStart(start)"
+                      >
+                        {{ formatStartLabel(start) }}
+                      </button>
+                    }
+                  </div>
+                  @if (canExpandMorning()) {
+                    <button
+                      class="reservation__retry"
+                      type="button"
+                      aria-controls="morning-time-options"
+                      [attr.aria-expanded]="morningExpanded()"
+                      (click)="toggleMorning()"
+                    >
+                      {{ morningExpanded() ? 'Ver menos horarios' : 'Ver más horarios' }}
+                    </button>
+                  }
+                }
+              </section>
+
+              <section class="time-period" aria-labelledby="afternoon-title">
+                <h3 class="eyebrow" id="afternoon-title">Tarde</h3>
+                @if (afternoonStarts().length === 0) {
+                  <p class="reservation__limit" role="status">
+                    Sin horarios disponibles por la tarde.
+                  </p>
+                } @else {
+                  <div
+                    class="professional-options available-times"
+                    id="afternoon-time-options"
+                    role="group"
+                    aria-labelledby="afternoon-title"
+                  >
+                    @for (start of visibleAfternoonStarts(); track start) {
+                      <button
+                        class="professional-option time-option"
+                        type="button"
+                        [class.professional-option--selected]="selectedStart() === start"
+                        [attr.aria-pressed]="selectedStart() === start"
+                        (click)="selectStart(start)"
+                      >
+                        {{ formatStartLabel(start) }}
+                      </button>
+                    }
+                  </div>
+                  @if (canExpandAfternoon()) {
+                    <button
+                      class="reservation__retry"
+                      type="button"
+                      aria-controls="afternoon-time-options"
+                      [attr.aria-expanded]="afternoonExpanded()"
+                      (click)="toggleAfternoon()"
+                    >
+                      {{ afternoonExpanded() ? 'Ver menos horarios' : 'Ver más horarios' }}
+                    </button>
+                  }
+                }
+              </section>
+              </div>
+            }
+          } @else {
+            <p class="reservation__state" role="status">
+              No hay horarios disponibles para esta fecha.
+            </p>
+          }
+        }
+      </section>
+      </div>
+
       <aside class="reservation__summary" aria-labelledby="summary-title">
         <p class="eyebrow"><span aria-hidden="true"></span> Resumen</p>
         <h2 id="summary-title">Tu selección</h2>
-        @if (selectedService(); as service) {
+        @if (selectedService() || selectedProfessional()) {
           <ul class="reservation__selected-list">
-            <li>{{ service.nombre }}</li>
+            @if (selectedService(); as service) {
+              <li><strong>Servicio:</strong> {{ service.nombre }}</li>
+            }
+            @if (selectedProfessional(); as professional) {
+              <li><strong>Profesional:</strong> {{ professional.nombre }}</li>
+            }
+            @if (selectedDate(); as date) {
+              <li><strong>Fecha:</strong> {{ date }}</li>
+            }
+            @if (selectedStart(); as start) {
+              <li><strong>Hora:</strong> {{ formatStartLabel(start) }}</li>
+            }
           </ul>
         } @else {
           <p class="reservation__summary-empty">
-            Selecciona servicios para ver aquí tu selección.
+            Selecciona servicio, profesional, fecha y hora para completar tu selección.
           </p>
         }
-        <p class="reservation__pending" id="professional-pending" role="status">
-          La selección de profesional todavía está pendiente. No se consultará disponibilidad ni
-          se enviará una reserva en esta fase.
+        <p class="reservation__pending" id="next-step-pending" role="status">
+          El envío definitivo de la reserva aún no está disponible en esta fase.
         </p>
+        @if (continueNotice()) {
+          <p class="reservation__pending" role="status">
+            Selección completa. El envío de la reserva se implementará en una fase posterior.
+          </p>
+        }
         <button
           class="reservation__continue"
           type="button"
-          disabled
-          aria-describedby="professional-pending"
+          [disabled]="!canContinue()"
+          aria-describedby="next-step-pending"
+          (click)="continueSelection()"
         >
           Continuar
         </button>

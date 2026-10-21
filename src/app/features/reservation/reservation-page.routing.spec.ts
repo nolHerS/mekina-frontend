@@ -34,6 +34,9 @@ describe('Reservation route', () => {
     TestBed.inject(HttpTestingController)
       .expectOne(`${API_BASE_URL}/api/servicios`)
       .flush([]);
+    TestBed.inject(HttpTestingController)
+      .expectOne(`${API_BASE_URL}/api/profesionales/publicos`)
+      .flush([]);
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
       'Elige tu servicio.',
     );
