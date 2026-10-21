@@ -6,7 +6,7 @@
   padding-block: 3.5rem;
 }
 
-.sample-note {
+.catalog-status {
   margin: 1.5rem 0 1rem;
   padding: 0.85rem 1rem;
   border-left: 2px solid var(--color-bronze);
@@ -19,6 +19,7 @@
 .service-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  margin-top: 1.5rem;
   gap: 1rem;
 }
 

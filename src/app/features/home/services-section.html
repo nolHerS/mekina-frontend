@@ -10,36 +10,49 @@
       <h2 id="services-title">Elige tu <em>estilo.</em></h2>
     </div>
     <p class="section-heading__aside">
-      Un buen corte empieza con una buena conversación. Descubre lo que estamos preparando.
+      Consulta los servicios, sus duraciones y precios publicados.
     </p>
   </div>
 
-  <p class="sample-note">
-    Catálogo de muestra. Los precios y las duraciones están pendientes de confirmación.
-  </p>
-
-  <div class="service-grid">
-    @for (service of services; track service.number) {
-      <article class="service-card">
-        <div class="service-card__top">
-          <span class="service-card__number">{{ service.number }}</span>
-          <span class="service-card__accent" aria-hidden="true"></span>
-        </div>
-        <div class="service-card__details">
-          <h3>{{ service.name }}</h3>
-          <p>{{ service.description }}</p>
-        </div>
-        <dl class="service-card__meta">
-          <div>
-            <dt>Duración</dt>
-            <dd>{{ service.duration }}</dd>
-          </div>
-          <div>
-            <dt>Precio</dt>
-            <dd>{{ service.price }}</dd>
-          </div>
-        </dl>
-      </article>
+  <div
+    class="catalog-content"
+    [attr.aria-busy]="catalogState() === 'loading' ? 'true' : 'false'"
+  >
+    @if (catalogState() === 'loading') {
+      <p class="catalog-status" role="status">Cargando servicios…</p>
+    } @else if (catalogState() === 'error') {
+      <p class="catalog-status" role="alert">
+        No se han podido cargar los servicios. Inténtalo de nuevo más tarde.
+      </p>
+    } @else if (catalogState() === 'empty') {
+      <p class="catalog-status" role="status">No hay servicios disponibles en este momento.</p>
+    } @else {
+      <div class="service-grid">
+        @for (service of services(); track service.id; let index = $index) {
+          <article class="service-card">
+            <div class="service-card__top">
+              <span class="service-card__number">{{ index + 1 }}</span>
+              <span class="service-card__accent" aria-hidden="true"></span>
+            </div>
+            <div class="service-card__details">
+              <h3>{{ service.nombre }}</h3>
+              @if (service.descripcion) {
+                <p>{{ service.descripcion }}</p>
+              }
+            </div>
+            <dl class="service-card__meta">
+              <div>
+                <dt>Duración</dt>
+                <dd>{{ service.duracionMinutos }} min</dd>
+              </div>
+              <div>
+                <dt>Precio</dt>
+                <dd>{{ formatPrice(service.precio) }}</dd>
+              </div>
+            </dl>
+          </article>
+        }
+      </div>
     }
   </div>
 </section>

@@ -1,33 +1,37 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { ServicioResponse } from '../../core/api/models/servicio-response.model';
+import { ServiciosApiService } from '../../core/api/servicios-api.service';
 
 @Component({
   selector: 'app-services-section',
   styleUrl: './services-section.scss',
   templateUrl: './services-section.html',
 })
-export class ServicesSection {
-  // Datos visuales provisionales; se sustituirán por el catálogo confirmado.
-  protected readonly services = [
-    {
-      number: '01',
-      name: 'Corte clásico',
-      description: 'Un estilo limpio, definido a tu medida.',
-      duration: 'Por confirmar',
-      price: 'Por confirmar',
-    },
-    {
-      number: '02',
-      name: 'Arreglo de barba',
-      description: 'Perfilado y cuidado para un acabado preciso.',
-      duration: 'Por confirmar',
-      price: 'Por confirmar',
-    },
-    {
-      number: '03',
-      name: 'Corte y barba',
-      description: 'Una atención completa para renovar tu estilo.',
-      duration: 'Por confirmar',
-      price: 'Por confirmar',
-    },
-  ];
+export class ServicesSection implements OnInit {
+  protected readonly services = signal<ServicioResponse[]>([]);
+  protected readonly catalogState = signal<'loading' | 'success' | 'empty' | 'error'>('loading');
+
+  private readonly serviciosApi = inject(ServiciosApiService);
+
+  ngOnInit(): void {
+    this.serviciosApi.getServicios().subscribe({
+      next: (services) => {
+        this.services.set(services);
+        this.catalogState.set(services.length > 0 ? 'success' : 'empty');
+      },
+      error: (error: unknown) => {
+        console.error('No se pudo cargar el catálogo de servicios.', error);
+        this.catalogState.set('error');
+      },
+    });
+  }
+
+  protected formatPrice(price: number): string {
+    const formattedPrice = new Intl.NumberFormat('es-ES', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(price);
+
+    return `${formattedPrice} €`;
+  }
 }
