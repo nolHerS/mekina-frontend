@@ -45,8 +45,9 @@ En desarrollo Angular debe:
 3. Obtener primero el token CSRF.
 4. Enviar `X-CSRF-TOKEN` en las peticiones mutables.
 
-La configuracion local no permite origenes CORS por defecto; las pruebas
-sobrescriben la propiedad con `http://localhost:4200`.
+La configuracion local mediante `compose.yaml` permite unicamente el origen
+exacto `http://localhost:4300`, que es el puerto del servidor Angular local.
+Las pruebas de integracion sobrescriben la propiedad con ese mismo origen.
 
 ### Produccion
 
