@@ -2,7 +2,13 @@
 
 <header class="site-header" (keydown.escape)="handleEscape()">
   <div class="site-header__inner">
-    <a class="brand" href="#inicio" aria-label="Barbería Mekina, inicio" (click)="closeMenu()">
+    <a
+      class="brand"
+      routerLink="/"
+      fragment="inicio"
+      aria-label="Barbería Mekina, inicio"
+      (click)="closeMenu()"
+    >
       <span class="brand__logo-frame">
         <img
           class="brand__logo"
@@ -40,12 +46,18 @@
       aria-label="Navegación principal"
       [class.primary-navigation--open]="menuOpen()"
     >
-      @for (link of links; track link.href) {
-        <a [href]="link.href" (click)="closeMenu()">{{ link.label }}</a>
+      @for (link of links; track link.label) {
+        <a
+          [routerLink]="link.route ?? '/'"
+          [fragment]="link.fragment ?? undefined"
+          (click)="closeMenu()"
+        >
+          {{ link.label }}
+        </a>
       }
     </nav>
 
-    <a class="header-cta" href="#mi-cita" (click)="closeMenu()">
+    <a class="header-cta" routerLink="/reservar" (click)="closeMenu()">
       Reservar cita <span aria-hidden="true">↗</span>
     </a>
   </div>

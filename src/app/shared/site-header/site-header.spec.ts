@@ -1,10 +1,12 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { SiteHeader } from './site-header';
 
 describe('SiteHeader', () => {
   it('should open and close the mobile navigation', async () => {
     await TestBed.configureTestingModule({
       imports: [SiteHeader],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(SiteHeader);

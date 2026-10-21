@@ -1,0 +1,101 @@
+<app-site-header />
+
+<main class="reservation" id="contenido" tabindex="-1">
+  <div class="reservation__inner section-wrap">
+    <header class="reservation__heading">
+      <p class="eyebrow"><span aria-hidden="true"></span> Tu cita empieza aquí</p>
+      <h1>Elige tu <em>servicio.</em></h1>
+      <p class="reservation__intro">
+        Selecciona un servicio del catálogo para preparar tu solicitud.
+      </p>
+    </header>
+
+    <div class="reservation__layout">
+      <section
+        class="reservation__catalog"
+        aria-labelledby="catalog-title"
+        [attr.aria-busy]="catalogState() === 'loading' ? 'true' : 'false'"
+      >
+        <div class="reservation__section-heading">
+          <h2 id="catalog-title">Servicios disponibles</h2>
+        </div>
+
+        @if (catalogState() === 'loading') {
+          <p class="reservation__state" role="status">Cargando servicios…</p>
+        } @else if (catalogState() === 'error') {
+          <div class="reservation__state reservation__state--error" role="alert">
+            <p>No se han podido cargar los servicios. Inténtalo de nuevo más tarde.</p>
+            <button class="reservation__retry" type="button" (click)="loadServices()">
+              Reintentar
+            </button>
+          </div>
+        } @else if (catalogState() === 'empty') {
+          <p class="reservation__state" role="status">
+            No hay servicios disponibles en este momento.
+          </p>
+        } @else {
+          <fieldset class="service-options" aria-describedby="service-selection-help">
+            <legend class="visually-hidden">Selecciona un servicio</legend>
+            <p class="reservation__limit" id="service-selection-help">
+              Elige una opción. Los servicios combinados del catálogo cuentan como un único
+              servicio.
+            </p>
+            @for (service of services(); track service.id) {
+              <label
+                class="service-option"
+                [class.service-option--selected]="selectedServiceId() === service.id"
+              >
+                  <input
+                    class="service-option__radio"
+                    type="radio"
+                    name="servicio"
+                    [value]="service.id"
+                    [checked]="selectedServiceId() === service.id"
+                    (change)="selectService(service.id)"
+                  />
+                  <span class="service-option__details">
+                    <span class="service-option__name">{{ service.nombre }}</span>
+                    @if (service.descripcion) {
+                      <span class="service-option__description">{{ service.descripcion }}</span>
+                    }
+                    <span class="service-option__meta">
+                      <span>Duración: {{ service.duracionMinutos }} min</span>
+                      <span>Precio: {{ formatPrice(service.precio) }}</span>
+                    </span>
+                  </span>
+              </label>
+            }
+          </fieldset>
+        }
+      </section>
+
+      <aside class="reservation__summary" aria-labelledby="summary-title">
+        <p class="eyebrow"><span aria-hidden="true"></span> Resumen</p>
+        <h2 id="summary-title">Tu selección</h2>
+        @if (selectedService(); as service) {
+          <ul class="reservation__selected-list">
+            <li>{{ service.nombre }}</li>
+          </ul>
+        } @else {
+          <p class="reservation__summary-empty">
+            Selecciona servicios para ver aquí tu selección.
+          </p>
+        }
+        <p class="reservation__pending" id="professional-pending" role="status">
+          La selección de profesional todavía está pendiente. No se consultará disponibilidad ni
+          se enviará una reserva en esta fase.
+        </p>
+        <button
+          class="reservation__continue"
+          type="button"
+          disabled
+          aria-describedby="professional-pending"
+        >
+          Continuar
+        </button>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<app-site-footer />
