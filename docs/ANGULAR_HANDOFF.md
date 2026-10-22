@@ -81,6 +81,15 @@ de sesiones no estan soportadas.
 - Una sesion expirada o revocada responde `401` en los recursos autenticados.
 - Angular no debe guardar la cookie, contrasena, token de sesion ni JWT en
   `localStorage`.
+- El frontend conserva el token CSRF solo en memoria y comparte el bootstrap
+  mientras haya peticiones concurrentes.
+- Tras un `403`, no se puede inferir solo por el estado HTTP si el rechazo fue
+  de CSRF o de autorizacion. El frontend no cierra la sesion ni reenvia la
+  mutacion. En la reserva permite solicitar expresamente un nuevo token; esa
+  accion invalida la cache y ejecuta un nuevo `GET /api/auth/csrf`, pero no
+  repite el `POST`.
+- Una respuesta tardia de un bootstrap invalidado no reemplaza el token
+  renovado. La mutacion rechazada no se reintenta automaticamente.
 
 ### CORS
 
@@ -283,6 +292,45 @@ reprogramacion debe cumplir tambien dos horas de antelacion. Una
 reprogramacion fallida conserva la reserva original. Las reservas conservan
 snapshots historicos de precio, duracion y nombre de los servicios.
 
+### Creacion de reservas desde Angular
+
+El contrato documentado de `POST /api/reservas` enumera `201`, `400`, `404` y
+`409` en la tabla anterior. La seccion general de seguridad describe tambien
+`401` para autenticacion ausente y `403` para permisos o rechazo CSRF, pero
+esos dos estados no estan repetidos en la fila del endpoint. Angular los trata
+de forma diferenciada sin presentarlos como una sesion cerrada; la respuesta
+exacta de cada uno para este endpoint no se ha verificado contra el backend
+real.
+
+El frontend:
+
+- vuelve a comprobar la identidad CUSTOMER y la disponibilidad antes del
+  `POST`; la comprobacion de disponibilidad no sustituye la validacion
+  autoritativa del backend;
+- solo envia `aceptaCondiciones: true` tras una aceptacion explicita de un
+  texto configurado como aprobado;
+- no reintenta automaticamente ninguna mutacion;
+- trata `400`, `401`, `403`, `404` y `409` segun sus significados documentados
+  o generales, sin mostrar cuerpos internos;
+- trata la perdida de red, los estados HTTP `5xx`, otros estados no
+  contemplados y las respuestas de exito que no pueda interpretar como un
+  resultado incierto. No muestra confirmacion y bloquea un nuevo envio hasta
+  que el usuario declare que comprobo por otro canal que no se creo una
+  reserva. Esto no verifica el resultado en el backend.
+
+El backend documenta `GET /api/reservas/mias` para clientes, pero el frontend
+actual no implementa un servicio o pantalla para consultar esa lista. Por
+tanto, esta interfaz no puede verificar si una respuesta incierta creo una
+reserva; el usuario debe comprobarlo por otro canal o contactar con la
+barberia antes de volver a intentarlo. El bloqueo se mantiene en el estado de
+la pagina actual y no sobrevive a una recarga del navegador; no debe
+presentarse como una verificacion persistente. No se ha confirmado una
+integracion real con el backend, cookies, CSRF o PostgreSQL.
+
+El envio en produccion permanece bloqueado mientras no se configure un texto
+de condiciones aprobado. El valor predeterminado de Angular es `pending`; no
+se debe habilitar con texto ficticio o sin validacion del responsable.
+
 ## 8. Healthchecks
 
 Actuator expone unicamente health:
@@ -315,6 +363,10 @@ migraciones ni operaciones destructivas.
 4. `GET /api/reservas/mias`.
 5. `PATCH /api/reservas/{id}/horario` o `DELETE /api/reservas/{id}` solo si
    las reglas de antelacion lo permiten.
+
+El paso 4 es un endpoint documentado del backend, no una capacidad integrada
+en la interfaz Angular actual. Las pruebas del frontend simulan las
+respuestas HTTP y no demuestran creacion ni consulta real de reservas.
 
 ### Panel
 
