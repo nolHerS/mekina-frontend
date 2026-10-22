@@ -1,6 +1,10 @@
-import { Component, ElementRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, inject, signal } from '@angular/core';
 import { NgOptimizedImage } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs';
+import { AuthApiService } from '../../core/auth/auth-api.service';
+import { getBackendErrorMessage } from '../../core/auth/auth-error-message';
 
 @Component({
   imports: [NgOptimizedImage, RouterLink],
@@ -10,6 +14,12 @@ import { RouterLink } from '@angular/router';
 })
 export class SiteHeader {
   protected readonly menuOpen = signal(false);
+  protected readonly logoutPending = signal(false);
+  protected readonly logoutError = signal<string | null>(null);
+  private readonly authApi = inject(AuthApiService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  protected readonly sessionState = this.authApi.sessionState;
   private readonly hostElement = inject(ElementRef<HTMLElement>);
 
   protected readonly links = [
@@ -23,6 +33,32 @@ export class SiteHeader {
 
   protected closeMenu(): void {
     this.menuOpen.set(false);
+  }
+
+  protected logout(): void {
+    if (this.logoutPending()) {
+      return;
+    }
+
+    this.logoutPending.set(true);
+    this.logoutError.set(null);
+    this.authApi
+      .logout()
+      .pipe(
+        finalize(() => this.logoutPending.set(false)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.closeMenu();
+          void this.router.navigateByUrl('/');
+        },
+        error: (error: unknown) =>
+          this.logoutError.set(
+            getBackendErrorMessage(error) ??
+              'No se pudo cerrar sesión. Inténtalo de nuevo.',
+          ),
+      });
   }
 
   protected handleEscape(): void {

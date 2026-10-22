@@ -55,6 +55,51 @@
           {{ link.label }}
         </a>
       }
+      @let session = sessionState();
+      @if (session.status === 'error') {
+        <span class="primary-navigation__session-status" role="status">
+          No se pudo comprobar la sesión. Puedes acceder o crear una cuenta.
+        </span>
+      } @else if (session.status === 'loading') {
+        <span class="primary-navigation__session-status" role="status">
+          Comprobando sesión…
+        </span>
+      }
+      @if (session.status === 'anonymous' || session.status === 'error') {
+        <a
+          class="primary-navigation__auth-link"
+          routerLink="/login"
+          (click)="closeMenu()"
+        >
+          Iniciar sesión
+        </a>
+        <a
+          class="primary-navigation__auth-link primary-navigation__auth-link--register"
+          routerLink="/registro"
+          (click)="closeMenu()"
+        >
+          Crear cuenta
+        </a>
+      } @else if (session.status === 'authenticated') {
+        <span class="primary-navigation__session-name">
+          {{ session.identity.nombre }}
+        </span>
+        <button
+          class="primary-navigation__logout"
+          type="button"
+          [disabled]="logoutPending()"
+          [attr.aria-busy]="logoutPending()"
+          (click)="logout()"
+        >
+          <span class="primary-navigation__logout-icon" aria-hidden="true">↪</span>
+          {{ logoutPending() ? 'Cerrando sesión…' : 'Cerrar sesión' }}
+        </button>
+      }
+      @if (logoutError(); as message) {
+        <span class="primary-navigation__logout-error" role="alert">
+          {{ message }}
+        </span>
+      }
     </nav>
 
     <a class="header-cta" routerLink="/reservar" (click)="closeMenu()">
