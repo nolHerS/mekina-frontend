@@ -2,39 +2,85 @@
   <div class="section-heading section-heading--visit">
     <div>
       <p class="eyebrow"><span aria-hidden="true"></span> Información práctica</p>
-      <h2 id="visit-title">Estamos preparando <em>tu visita.</em></h2>
+      <h2 id="visit-title">Te esperamos <em>en Mekina.</em></h2>
     </div>
     <p class="section-heading__aside">
-      Publicaremos aquí los datos confirmados del local.
+      Tu próximo corte empieza con una buena visita.
     </p>
   </div>
 
   <div class="visit-grid">
     <article class="visit-card" id="horarios" tabindex="-1">
       <div class="visit-card__top">
-        <span class="visit-card__number" aria-hidden="true">01</span>
-        <span class="visit-card__status">Pendiente de confirmación</span>
+        <span class="visit-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="8.25" />
+            <path d="M12 7.5v5l3.25 2" />
+          </svg>
+        </span>
+        <span class="visit-card__eyebrow">Horario semanal</span>
       </div>
       <h3>Horarios</h3>
-      <p>Los horarios de atención se publicarán cuando estén confirmados.</p>
+      <p class="visit-card__days">De lunes a sábado</p>
+      <dl class="visit-card__hours">
+        <div class="visit-card__hours-period">
+          <dt>Mañana</dt>
+          <dd>10:00–14:00</dd>
+        </div>
+        <div class="visit-card__hours-period">
+          <dt>Tarde</dt>
+          <dd>17:00–21:00</dd>
+        </div>
+      </dl>
     </article>
 
     <article class="visit-card" id="ubicacion" tabindex="-1">
       <div class="visit-card__top">
-        <span class="visit-card__number" aria-hidden="true">02</span>
-        <span class="visit-card__status">Pendiente de confirmación</span>
+        <span class="visit-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M19 10.25c0 5-7 10.25-7 10.25S5 15.25 5 10.25a7 7 0 1 1 14 0Z" />
+            <circle cx="12" cy="10" r="2.25" />
+          </svg>
+        </span>
+        <span class="visit-card__eyebrow">Ven a visitarnos</span>
       </div>
       <h3>Ubicación</h3>
-      <p>La dirección se mostrará aquí cuando esté confirmada.</p>
+      <address class="visit-card__address">
+        Calle Carmen 7A
+        <span>Villafranca de los Barros, Badajoz</span>
+      </address>
+      <a
+        class="visit-card__link"
+        href="https://www.google.com/maps/search/?api=1&query=Calle+Carmen+7A%2C+Villafranca+de+los+Barros%2C+Badajoz"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Abrir en Google Maps <span aria-hidden="true">↗</span>
+      </a>
     </article>
 
     <article class="visit-card" id="contacto" tabindex="-1">
       <div class="visit-card__top">
-        <span class="visit-card__number" aria-hidden="true">03</span>
-        <span class="visit-card__status">Pendiente de confirmación</span>
+        <span class="visit-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="4.75" y="4.75" width="14.5" height="14.5" rx="4.25" />
+            <circle cx="12" cy="12" r="3.25" />
+            <circle class="visit-card__icon-dot" cx="16.75" cy="7.5" r=".8" />
+          </svg>
+        </span>
+        <span class="visit-card__eyebrow">Síguenos</span>
       </div>
       <h3>Contacto</h3>
-      <p>Los canales oficiales se anunciarán cuando estén confirmados.</p>
+      <p class="visit-card__contact-copy">Encuéntranos en Instagram</p>
+      <a
+        class="visit-card__link visit-card__instagram"
+        href="https://www.instagram.com/mekina_barberia/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Instagram de Barbería Mekina, @mekina_barberia (abre en una pestaña nueva)"
+      >
+        @mekina_barberia <span aria-hidden="true">↗</span>
+      </a>
     </article>
   </div>
 </section>
