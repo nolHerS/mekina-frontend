@@ -1,0 +1,142 @@
+<app-site-header />
+
+<main class="auth-page" id="contenido" tabindex="-1">
+  <div class="auth-page__inner">
+    <header class="auth-page__heading">
+      <p class="eyebrow"><span aria-hidden="true"></span> Barbería Mekina</p>
+      <h1>Empieza <em>por aquí.</em></h1>
+      <p>Crea tu cuenta para preparar tu próxima cita.</p>
+    </header>
+
+    <section class="auth-card" aria-labelledby="registration-title">
+      <h2 id="registration-title">Crear cuenta</h2>
+
+      @if (sessionWarning(); as warning) {
+        <div class="auth-feedback auth-feedback--notice" role="status">
+          <p>{{ warning }}</p>
+          <a routerLink="/login">Ir a iniciar sesión</a>
+        </div>
+      }
+
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        [attr.aria-busy]="isSubmitting() ? 'true' : 'false'"
+        novalidate
+      >
+        <fieldset class="auth-fields" [disabled]="isSubmitting() || sessionWarning() !== null">
+          <div class="auth-field">
+            <label for="registration-name">Nombre</label>
+            <input
+              id="registration-name"
+              type="text"
+              formControlName="nombre"
+              autocomplete="name"
+              maxlength="255"
+              required
+              [attr.aria-invalid]="hasError(form.controls.nombre) ? 'true' : null"
+              [attr.aria-describedby]="
+                hasError(form.controls.nombre) ? 'registration-name-error' : null
+              "
+            />
+            @if (hasError(form.controls.nombre)) {
+              <p class="auth-field__error" id="registration-name-error">
+                {{ fieldError(form.controls.nombre, 'tu nombre') }}
+              </p>
+            }
+          </div>
+
+          <div class="auth-field">
+            <label for="registration-email">Correo electrónico</label>
+            <input
+              id="registration-email"
+              type="email"
+              formControlName="correoElectronico"
+              autocomplete="email"
+              maxlength="320"
+              required
+              [attr.aria-invalid]="
+                hasError(form.controls.correoElectronico) ? 'true' : null
+              "
+              [attr.aria-describedby]="
+                hasError(form.controls.correoElectronico)
+                  ? 'registration-email-error'
+                  : null
+              "
+            />
+            @if (hasError(form.controls.correoElectronico)) {
+              <p class="auth-field__error" id="registration-email-error">
+                {{
+                  fieldError(
+                    form.controls.correoElectronico,
+                    'tu correo electrónico'
+                  )
+                }}
+              </p>
+            }
+          </div>
+
+          <div class="auth-field">
+            <label for="registration-phone">Teléfono <span>(opcional)</span></label>
+            <input
+              id="registration-phone"
+              type="tel"
+              formControlName="telefono"
+              autocomplete="tel"
+              maxlength="50"
+              [attr.aria-invalid]="hasError(form.controls.telefono) ? 'true' : null"
+              [attr.aria-describedby]="
+                hasError(form.controls.telefono) ? 'registration-phone-error' : null
+              "
+            />
+            @if (hasError(form.controls.telefono)) {
+              <p class="auth-field__error" id="registration-phone-error">
+                {{ fieldError(form.controls.telefono, 'el teléfono') }}
+              </p>
+            }
+          </div>
+
+          <div class="auth-field">
+            <label for="registration-password">Contraseña</label>
+            <input
+              id="registration-password"
+              type="password"
+              formControlName="contrasena"
+              autocomplete="new-password"
+              minlength="6"
+              maxlength="72"
+              required
+              [attr.aria-invalid]="hasError(form.controls.contrasena) ? 'true' : null"
+              [attr.aria-describedby]="
+                hasError(form.controls.contrasena) ? 'registration-password-error' : null
+              "
+            />
+            @if (hasError(form.controls.contrasena)) {
+              <p class="auth-field__error" id="registration-password-error">
+                {{ fieldError(form.controls.contrasena, 'la contraseña') }}
+              </p>
+            }
+          </div>
+        </fieldset>
+
+        @if (errorMessage(); as message) {
+          <p class="auth-feedback auth-feedback--error" role="alert">{{ message }}</p>
+        }
+
+        <button
+          class="auth-submit"
+          type="submit"
+          [disabled]="isSubmitting() || form.invalid || sessionWarning() !== null"
+        >
+          {{ isSubmitting() ? 'Creando cuenta…' : 'Crear cuenta' }}
+        </button>
+      </form>
+
+      <p class="auth-card__switch">
+        ¿Ya tienes una cuenta? <a routerLink="/login">Iniciar sesión</a>
+      </p>
+    </section>
+  </div>
+</main>
+
+<app-site-footer />

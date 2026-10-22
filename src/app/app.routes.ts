@@ -14,6 +14,18 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login-page').then((module) => module.LoginPage),
+  },
+  {
+    path: 'registro',
+    loadComponent: () =>
+      import('./features/auth/registration-page').then(
+        (module) => module.RegistrationPage,
+      ),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

@@ -1,0 +1,84 @@
+<app-site-header />
+
+<main class="auth-page" id="contenido" tabindex="-1">
+  <div class="auth-page__inner">
+    <header class="auth-page__heading">
+      <p class="eyebrow"><span aria-hidden="true"></span> Barbería Mekina</p>
+      <h1>Qué bueno <em>verte.</em></h1>
+      <p>Inicia sesión para continuar con tu cita.</p>
+    </header>
+
+    <section class="auth-card" aria-labelledby="login-title">
+      <h2 id="login-title">Iniciar sesión</h2>
+      <form
+        [formGroup]="form"
+        (ngSubmit)="submit()"
+        [attr.aria-busy]="isSubmitting() ? 'true' : 'false'"
+        novalidate
+      >
+        <div class="auth-field">
+          <label for="login-email">Correo electrónico</label>
+          <input
+            id="login-email"
+            type="email"
+            formControlName="correoElectronico"
+            autocomplete="email"
+            required
+            [attr.aria-invalid]="hasError(form.controls.correoElectronico) ? 'true' : null"
+            [attr.aria-describedby]="
+              hasError(form.controls.correoElectronico) ? 'login-email-error' : null
+            "
+          />
+          @if (hasError(form.controls.correoElectronico)) {
+            <p class="auth-field__error" id="login-email-error">
+              {{ fieldError(form.controls.correoElectronico, 'tu correo electrónico') }}
+            </p>
+          }
+        </div>
+
+        <div class="auth-field">
+          <label for="login-password">Contraseña</label>
+          <input
+            id="login-password"
+            type="password"
+            formControlName="contrasena"
+            autocomplete="current-password"
+            required
+            [attr.aria-invalid]="hasError(form.controls.contrasena) ? 'true' : null"
+            [attr.aria-describedby]="
+              hasError(form.controls.contrasena) ? 'login-password-error' : null
+            "
+          />
+          @if (hasError(form.controls.contrasena)) {
+            <p class="auth-field__error" id="login-password-error">
+              {{ fieldError(form.controls.contrasena, 'tu contraseña') }}
+            </p>
+          }
+        </div>
+
+        <label class="auth-checkbox" for="login-remember">
+          <input
+            id="login-remember"
+            type="checkbox"
+            formControlName="recordarme"
+          />
+          <span>Recordarme</span>
+        </label>
+
+        @if (errorMessage(); as message) {
+          <p class="auth-feedback auth-feedback--error" role="alert">{{ message }}</p>
+        }
+
+        <button class="auth-submit" type="submit" [disabled]="isSubmitting() || form.invalid">
+          {{ isSubmitting() ? 'Iniciando sesión…' : 'Iniciar sesión' }}
+        </button>
+      </form>
+
+      <p class="auth-card__switch">
+        ¿Aún no tienes una cuenta? <a routerLink="/registro">Crear cuenta</a>
+      </p>
+    </section>
+  </div>
+</main>
+
+<app-site-footer />
