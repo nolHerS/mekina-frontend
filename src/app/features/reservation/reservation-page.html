@@ -31,7 +31,7 @@
         } @else if (catalogState() === 'error') {
           <div class="reservation__state reservation__state--error" role="alert">
             <p>No se han podido cargar los servicios. Inténtalo de nuevo más tarde.</p>
-            <button class="reservation__retry" type="button" (click)="loadServices()">
+            <button class="reservation__retry" type="button" [disabled]="isReservationLocked()" (click)="loadServices()">
               Reintentar
             </button>
           </div>
@@ -57,6 +57,7 @@
                     name="servicio"
                     [value]="service.id"
                     [checked]="selectedServiceId() === service.id"
+                    [disabled]="isReservationLocked()"
                     (change)="selectService(service.id)"
                   />
                   <span class="service-option__details">
@@ -89,7 +90,7 @@
         } @else if (professionalsState() === 'error') {
           <div class="reservation__state reservation__state--error" role="alert">
             <p>No se han podido cargar los profesionales. Inténtalo de nuevo más tarde.</p>
-            <button class="reservation__retry" type="button" (click)="loadProfessionals()">
+            <button class="reservation__retry" type="button" [disabled]="isReservationLocked()" (click)="loadProfessionals()">
               Reintentar
             </button>
           </div>
@@ -119,6 +120,7 @@
                   name="profesional"
                   [value]="professional.id"
                   [checked]="selectedProfessionalId() === professional.id"
+                  [disabled]="isReservationLocked()"
                   (change)="selectProfessional(professional.id)"
                 />
                 <span class="professional-option__details">
@@ -148,7 +150,7 @@
             [min]="dateMin()"
             [max]="dateMax()"
             [value]="selectedDate() ?? ''"
-            [disabled]="!canChooseDate()"
+            [disabled]="!canChooseDate() || isReservationLocked()"
             aria-describedby="reservation-date-help"
             (change)="selectDate($event)"
           />
@@ -205,6 +207,7 @@
                         type="button"
                         [class.professional-option--selected]="selectedStart() === start"
                         [attr.aria-pressed]="selectedStart() === start"
+                        [disabled]="isReservationLocked()"
                         (click)="selectStart(start)"
                       >
                         {{ formatStartLabel(start) }}
@@ -217,6 +220,7 @@
                       type="button"
                       aria-controls="morning-time-options"
                       [attr.aria-expanded]="morningExpanded()"
+                      [disabled]="isReservationLocked()"
                       (click)="toggleMorning()"
                     >
                       {{ morningExpanded() ? 'Ver menos horarios' : 'Ver más horarios' }}
@@ -244,6 +248,7 @@
                         type="button"
                         [class.professional-option--selected]="selectedStart() === start"
                         [attr.aria-pressed]="selectedStart() === start"
+                        [disabled]="isReservationLocked()"
                         (click)="selectStart(start)"
                       >
                         {{ formatStartLabel(start) }}
@@ -256,6 +261,7 @@
                       type="button"
                       aria-controls="afternoon-time-options"
                       [attr.aria-expanded]="afternoonExpanded()"
+                      [disabled]="isReservationLocked()"
                       (click)="toggleAfternoon()"
                     >
                       {{ afternoonExpanded() ? 'Ver menos horarios' : 'Ver más horarios' }}
@@ -297,23 +303,209 @@
             Selecciona servicio, profesional, fecha y hora para completar tu selección.
           </p>
         }
-        <p class="reservation__pending" id="next-step-pending" role="status">
-          El envío definitivo de la reserva aún no está disponible en esta fase.
-        </p>
-        @if (continueNotice()) {
-          <p class="reservation__pending" role="status">
-            Selección completa. El envío de la reserva se implementará en una fase posterior.
-          </p>
+        @if (reservationResult(); as result) {
+          <section class="reservation__state reservation__confirmation" role="status" aria-live="polite">
+            <h3>{{ result.estado === 'CONFIRMED' ? 'Reserva confirmada' : 'Reserva registrada' }}</h3>
+            <dl>
+              <div>
+                <dt>Fecha y hora</dt>
+                <dd><time [attr.datetime]="result.empiezaEn">{{ result.empiezaEn }}</time></dd>
+              </div>
+              <div>
+                <dt>Duración</dt>
+                <dd>{{ result.duracionTotalMinutos }} min</dd>
+              </div>
+              <div>
+                <dt>Precio total</dt>
+                <dd>{{ formatPrice(result.precioTotal) }}</dd>
+              </div>
+              <div>
+                <dt>Estado</dt>
+                <dd>{{ result.estado }}</dd>
+              </div>
+            </dl>
+          </section>
+        } @else {
+          @if (reservationOutcomeUncertain()) {
+            <p class="reservation__pending" id="next-step-pending" role="status">
+              No se ha podido confirmar si la solicitud creó una reserva.
+            </p>
+          } @else {
+            <p class="reservation__pending" id="next-step-pending">
+              Todavía no se ha enviado ni creado ninguna reserva.
+            </p>
+          }
+          @if (continueState() === 'anonymous') {
+            <div class="reservation__state reservation__continuation" role="status" aria-live="polite">
+              <p>Inicia sesión o crea una cuenta para continuar con esta selección.</p>
+              <p>
+                <a class="reservation__retry" routerLink="/login" [state]="authNavigationState()">Iniciar sesión</a>
+                <a class="reservation__retry" routerLink="/registro" [state]="authNavigationState()">Crear cuenta</a>
+              </p>
+            </div>
+          } @else if (continueState() === 'loading') {
+            <div class="reservation__state reservation__continuation" role="status" aria-live="polite">
+              <p>Comprobando tu sesión. No avanzaremos hasta confirmar su estado.</p>
+              <button class="reservation__retry" type="button" (click)="retrySessionCheck()">
+                Reintentar comprobación
+              </button>
+            </div>
+          } @else if (continueState() === 'error') {
+            <div class="reservation__state reservation__continuation" role="alert">
+              <p>No se pudo comprobar tu sesión. Reintenta la comprobación antes de continuar.</p>
+              <button class="reservation__retry" type="button" (click)="retrySessionCheck()">
+                Reintentar comprobación
+              </button>
+            </div>
+          } @else if (continueState() === 'not-customer') {
+            <p class="reservation__state reservation__continuation" role="alert">
+              Esta cuenta no tiene permisos para crear reservas online. No se ha enviado ninguna solicitud.
+            </p>
+          } @else if (continueState() === 'phone-required') {
+            <div class="reservation__state reservation__continuation">
+              <p>Completa el teléfono de contacto de tu perfil para continuar con este flujo.</p>
+              @if (phoneSaved()) {
+                <p role="status">El teléfono se ha actualizado en tu perfil.</p>
+              }
+              <form (ngSubmit)="updatePhoneAndContinue()">
+                <label for="reservation-phone">Teléfono</label>
+                <input
+                  id="reservation-phone"
+                  class="reservation__retry reservation__date-input"
+                  type="tel"
+                  maxlength="50"
+                  autocomplete="tel"
+                  [formControl]="phoneControl"
+                  [attr.aria-invalid]="phoneControl.touched && phoneControl.invalid"
+                  [attr.aria-describedby]="phoneControl.touched && phoneControl.invalid ? 'reservation-phone-error' : null"
+                />
+                @if (phoneControl.touched && phoneControl.invalid) {
+                  <p class="reservation__field-error" id="reservation-phone-error" role="alert">
+                    Introduce un teléfono de hasta 50 caracteres.
+                  </p>
+                }
+                <button class="reservation__retry" type="submit" [disabled]="isBookingBusy()">
+                  {{ bookingOperation() === 'updating-profile' ? 'Guardando…' : 'Guardar teléfono' }}
+                </button>
+              </form>
+              @if (profileError(); as error) {
+                <p role="alert">{{ error }}</p>
+              }
+            </div>
+          } @else if (continueState() === 'ready') {
+            <div class="reservation__state reservation__continuation">
+              <p>Confirma la selección. La disponibilidad se volverá a consultar antes del envío y el backend calculará el precio y la duración.</p>
+              @if (phoneSaved()) {
+                <p role="status">El teléfono se ha actualizado en tu perfil.</p>
+              }
+              @if (csrfRefreshMessage(); as message) {
+                <p role="status">{{ message }}</p>
+              }
+              @if (conditionsPending) {
+                <p role="status">
+                  Las condiciones de reserva están pendientes de validación. La confirmación no está disponible todavía.
+                </p>
+              } @else {
+                <div class="reservation__consent">
+                  <p id="reservation-conditions">{{ conditionsText }}</p>
+                  @if (conditionsUrl) {
+                    <a [href]="conditionsUrl" target="_blank" rel="noopener noreferrer">
+                      Leer las condiciones de reserva (se abre en otra pestaña)
+                    </a>
+                  }
+                  <label for="reservation-accept-conditions">
+                    <input
+                      id="reservation-accept-conditions"
+                      type="checkbox"
+                      [checked]="conditionsAccepted()"
+                      [disabled]="isReservationLocked()"
+                      aria-describedby="reservation-conditions"
+                      (change)="setConditionsAccepted($event)"
+                    />
+                    He leído y acepto las condiciones de reserva.
+                  </label>
+                </div>
+                <button
+                  class="reservation__continue"
+                  type="button"
+                  [disabled]="!canSubmitReservation()"
+                  (click)="confirmReservation()"
+                >
+                  {{ bookingOperation() === 'creating' ? 'Enviando…' : 'Confirmar y reservar' }}
+                </button>
+              }
+            </div>
+          } @else if (continueState() === 'slot-stale') {
+            <p class="reservation__state reservation__continuation" role="alert">
+              {{ bookingError() ?? 'Ese horario ya no está disponible. Elige otra hora.' }}
+            </p>
+          } @else if (continueState() === 'uncertain') {
+            <p class="reservation__state reservation__continuation" role="alert">
+              {{ bookingError() }}
+            </p>
+            <p class="reservation__limit">
+              Esta pantalla no permite comprobar si la reserva llegó a registrarse. No vuelvas a intentarlo hasta comprobarlo por otro canal o contactar con la barbería.
+            </p>
+            <button
+              id="reservation-acknowledge-uncertain"
+              class="reservation__retry"
+              type="button"
+              (click)="acknowledgeUncertainOutcome()"
+            >
+              He comprobado por otro canal que no se creó una reserva; continuar
+            </button>
+          } @else if (continueState() === 'failed') {
+            <p class="reservation__state reservation__continuation" role="alert">
+              {{ bookingError() }}
+            </p>
+            @if (csrfRefreshAvailable()) {
+              <p class="reservation__limit">
+                Un 403 puede deberse a autorización o a CSRF. Renovar el token no reenvía la reserva ni confirma su resultado.
+              </p>
+              <button
+                id="reservation-refresh-csrf"
+                class="reservation__retry"
+                type="button"
+                [disabled]="isBookingBusy()"
+                (click)="refreshCsrfAfterForbidden()"
+              >
+                {{ bookingOperation() === 'refreshing-csrf' ? 'Renovando…' : 'Renovar token de seguridad' }}
+              </button>
+              @if (csrfRefreshMessage(); as message) {
+                <p role="alert">{{ message }}</p>
+              }
+            }
+          } @else if (continueState() === 'draft-invalid') {
+            <p class="reservation__state reservation__continuation" role="status" aria-live="polite">
+              La selección ya no se puede restaurar o el horario dejó de estar disponible. Revisa y elige un horario actual.
+            </p>
+          }
+          @if (bookingOperation() === 'checking-session') {
+            <p class="reservation__state" role="status" aria-live="polite">Comprobando la sesión…</p>
+          } @else if (bookingOperation() === 'checking-availability') {
+            <p class="reservation__state" role="status" aria-live="polite">Volviendo a consultar la disponibilidad…</p>
+          } @else if (bookingOperation() === 'creating') {
+            <p class="reservation__state" role="status" aria-live="polite">Enviando la solicitud al servidor…</p>
+          } @else if (bookingOperation() === 'updating-profile') {
+            <p class="reservation__state" role="status" aria-live="polite">Actualizando el perfil…</p>
+          } @else if (bookingOperation() === 'refreshing-csrf') {
+            <p class="reservation__state" role="status" aria-live="polite">Renovando el token de seguridad. La reserva no se reenviará.</p>
+          }
+          @if (bookingError() && continueState() !== 'slot-stale' && continueState() !== 'uncertain' && continueState() !== 'failed') {
+            <p class="reservation__state" role="alert">{{ bookingError() }}</p>
+          }
         }
-        <button
-          class="reservation__continue"
-          type="button"
-          [disabled]="!canContinue()"
-          aria-describedby="next-step-pending"
-          (click)="continueSelection()"
-        >
-          Continuar
-        </button>
+        @if (reservationResult() === null) {
+          <button
+            class="reservation__continue"
+            type="button"
+            [disabled]="!canContinue() || isReservationLocked()"
+            aria-describedby="next-step-pending"
+            (click)="continueSelection()"
+          >
+            Continuar
+          </button>
+        }
       </aside>
     </div>
   </div>
