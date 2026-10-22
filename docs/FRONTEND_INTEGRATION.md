@@ -675,8 +675,8 @@ interface ReservaMutationResponse {
 | Área Angular | Endpoint existente | Estado | Observaciones |
 |---|---|---|---|
 | Web pública/catálogo | `GET /api/servicios` | Implementado | Solo servicios activos; no CRUD público. |
-| Login | `GET /api/auth/csrf`, `POST /api/auth/login` | Implementado | Cookies y CSRF; `withCredentials` necesario. |
-| Registro | `GET /api/auth/csrf`, `POST /api/auth/registro` | Implementado | Devuelve sesión lógica/usuario; confirmar flujo de cookie con pruebas E2E. |
+| Login | `/login`; `GET /api/auth/csrf`, `POST /api/auth/login`, `GET /api/auth/me` | Implementado | Confirma la sesión antes de navegar; `recordarme` desactivado por defecto. |
+| Registro | `/registro`; `GET /api/auth/csrf`, `POST /api/auth/registro`, `GET /api/auth/me` | Implementado | Navega a `/reservar` solo tras confirmar la sesión; ofrece login si no se confirma. |
 | Sesión actual | `GET /api/auth/me` | Implementado | `401` si no hay sesión. |
 | Logout | `POST /api/auth/logout` | Implementado por Spring Security | Requiere CSRF; devuelve `204`. |
 | Perfil | `PATCH /api/auth/me` | Implementado | No permite cambiar email ni roles. |
@@ -712,7 +712,9 @@ Organizar el frontend por capacidades, no por una única clase global:
 
 Configurar la URL base mediante `environment` de Angular, nunca hardcodearla en cada servicio. La configuración de desarrollo debe apuntar a un backend con perfil local y cookies compatibles; producción debe usar HTTPS y un origen/CORS revisado explícitamente.
 
-Un `HttpInterceptor` debe añadir `withCredentials` y el token CSRF a las escrituras, pero los guards solo mejoran la navegación: la autorización real sigue estando en Spring Security.
+El interceptor funcional añade `withCredentials` y el token CSRF a las escrituras dirigidas al backend. Los guards solo mejoran la navegación: la autorización real sigue estando en Spring Security.
+
+La capa HTTP inicial de autenticación ya está implementada en `src/app/core/auth`: `AuthApiService` expone login, registro, consulta de sesión y logout; `CsrfTokenService` conserva el token únicamente en memoria; y el interceptor funcional registrado en `app.config.ts` limita las credenciales al origen del backend, adjunta CSRF a `POST`, `PATCH` y `DELETE`, y no reintenta escrituras. El estado de sesión también permanece en memoria y `/api/auth/me` es su fuente de verdad.
 
 ## 11. Pendientes y límites de esta primera versión
 
