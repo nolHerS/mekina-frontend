@@ -2,6 +2,11 @@
 
 <main class="reservation" id="contenido" tabindex="-1">
   <div class="reservation__inner section-wrap">
+    @if (registrationWelcome()) {
+      <p class="reservation__state" role="status" aria-live="polite">
+        ¡Bienvenido! Tu sesión está confirmada. Ya puedes continuar con tu reserva.
+      </p>
+    }
     <header class="reservation__heading">
       <p class="eyebrow"><span aria-hidden="true"></span> Tu cita empieza aquí</p>
       <h1>Elige tu <em>servicio.</em></h1>

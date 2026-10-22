@@ -6,6 +6,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { SiteFooter } from '../../shared/site-footer/site-footer';
 import { SiteHeader } from '../../shared/site-header/site-header';
@@ -84,6 +85,10 @@ function isCalendarDate(date: string): boolean {
   templateUrl: './reservation-page.html',
 })
 export class ReservationPage implements OnDestroy, OnInit {
+  private readonly router = inject(Router);
+  protected readonly registrationWelcome = signal(
+    this.router.getCurrentNavigation()?.extras.state?.['registrationWelcome'] === true,
+  );
   protected readonly services = signal<ServicioResponse[]>([]);
   protected readonly catalogState = signal<CatalogState>('loading');
   protected readonly selectedServiceId = signal<string | null>(null);
