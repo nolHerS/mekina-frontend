@@ -163,6 +163,37 @@ describe('AuthApiService', () => {
     });
   });
 
+  it('updates the current profile with the documented fields and refreshes shared identity', () => {
+    const service = TestBed.inject(AuthApiService);
+    const http = TestBed.inject(HttpTestingController);
+    service.me().subscribe();
+    http.expectOne(`${authEndpoint}/me`).flush(identity);
+
+    const updatedIdentity = { ...identity, telefono: '611111111' };
+    service
+      .updateProfile({ nombre: identity.nombre, telefono: '611111111' })
+      .subscribe();
+
+    const csrfRequest = http.expectOne(csrfEndpoint);
+    expect(csrfRequest.request.method).toBe('GET');
+    csrfRequest.flush({ token: 'csrf-token' });
+
+    const profileRequest = http.expectOne(`${authEndpoint}/me`);
+    expect(profileRequest.request.method).toBe('PATCH');
+    expect(profileRequest.request.body).toEqual({
+      nombre: identity.nombre,
+      telefono: '611111111',
+    });
+    expect(profileRequest.request.withCredentials).toBe(true);
+    expect(profileRequest.request.headers.get('X-CSRF-TOKEN')).toBe('csrf-token');
+    profileRequest.flush(updatedIdentity);
+
+    expect(service.sessionState()).toEqual({
+      status: 'authenticated',
+      identity: updatedIdentity,
+    });
+  });
+
   it('shares a pending /me request between concurrent callers', () => {
     const service = TestBed.inject(AuthApiService);
     const results: Array<IdentidadResponse | null> = [];

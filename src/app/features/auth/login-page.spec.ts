@@ -3,6 +3,7 @@ import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
+import { Location } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { API_BASE_URL } from '../../core/api/api.config';
@@ -168,6 +169,34 @@ describe('LoginPage', () => {
       identity,
     });
     expect(navigateSpy).toHaveBeenCalledWith('/reservar');
+  });
+
+  it('returns to reservations with a valid pending selection after login', async () => {
+    const reservationDraft = {
+      servicioId: '00000000-0000-0000-0000-000000000010',
+      profesionalId: '00000000-0000-0000-0000-000000000020',
+      fecha: '2026-10-21',
+      empiezaEn: '2026-10-21T10:00:00+02:00',
+    };
+    vi.spyOn(TestBed.inject(Location), 'getState').mockReturnValue({
+      reservationDraft,
+    });
+    const fixture = createPage();
+    const navigateSpy = vi
+      .spyOn(TestBed.inject(Router), 'navigateByUrl')
+      .mockResolvedValue(true);
+    fillForm(fixture);
+    submitForm(fixture);
+
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(`${authEndpoint}/csrf`).flush({ token: 'csrf-token' });
+    http.expectOne(`${authEndpoint}/login`).flush(authResponse);
+    http.expectOne(`${authEndpoint}/me`).flush(identity);
+    await fixture.whenStable();
+
+    expect(navigateSpy).toHaveBeenCalledWith('/reservar', {
+      state: { reservationDraft },
+    });
   });
 
   it('shows useful HTTP errors without assuming a uniform response body', () => {

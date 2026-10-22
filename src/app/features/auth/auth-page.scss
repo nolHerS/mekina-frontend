@@ -137,6 +137,17 @@
   color: #f0aaa0;
 }
 
+.auth-feedback--error p {
+  margin: 0;
+}
+
+.auth-feedback--error a {
+  display: inline-block;
+  margin-top: 0.45rem;
+  color: var(--color-bronze);
+  font-weight: 700;
+}
+
 .auth-feedback--notice {
   border-left: 2px solid var(--color-bronze);
   background: rgb(212 166 108 / 8%);

@@ -384,6 +384,10 @@ Errores:
 
 Una reserva confirmada no se revierte si falla su email; el envío se registra aparte en la outbox.
 
+**Pendiente antes de publicar la confirmación online:** no hay texto aprobado de condiciones de reserva en el frontend. El responsable debe proporcionar el texto legal final para mostrar antes de la casilla y, si corresponde, el enlace al documento oficial; también debe confirmar la redacción exacta de la casilla y cualquier requisito de versión o evidencia de aceptación. Hasta recibirlo, la interfaz mantiene la aceptación y el envío bloqueados. El request documentado solo contiene `aceptaCondiciones: true`; no define texto ni versión legal.
+
+La identidad de `/api/auth/me` puede tener `telefono: null`, y el request de creación no contiene teléfono. La documentación no confirma que el backend exija un teléfono para todas las reservas. Si el producto decide pedirlo antes de continuar, actualizar el perfil mediante `PATCH /api/auth/me` con `nombre` y `telefono` según la sección 3.6, y continuar solo tras confirmar la respuesta; no presentar esa regla de interfaz como validación confirmada del backend.
+
 ### 5.2 Mis reservas
 
 `GET /api/reservas/mias` requiere `CUSTOMER`.
@@ -696,6 +700,8 @@ interface ReservaMutationResponse {
 | Gestión de profesionales | No existe endpoint público documentado | Pendiente | El frontend necesita conocer el UUID del profesional por configuración o futuro endpoint. |
 | Administración de usuarios/roles | No existe | Pendiente | Previsto funcionalmente, no disponible por HTTP. |
 | Estadísticas e historial avanzado | No existe | Pendiente | No construir pantallas que dependan de ellos. |
+
+Antes de implementar la confirmación de una reserva online, si la identidad de `/api/auth/me` no incluye teléfono, solicitarlo mediante la actualización del perfil existente: cargar/confirmar la identidad con `GET /api/auth/me` y enviar `PATCH /api/auth/me` con el nombre obligatorio y el teléfono. No crear la reserva mientras falte ese dato. Tras completar el perfil, volver a consultar `GET /api/disponibilidad`; la selección de horario no garantiza que siga libre.
 
 ## 10. Recomendación de integración Angular
 

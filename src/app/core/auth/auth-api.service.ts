@@ -10,6 +10,7 @@ import {
   throwError,
 } from 'rxjs';
 import { API_BASE_URL } from '../api/api.config';
+import { ActualizarPerfilRequest } from './models/actualizar-perfil-request.model';
 import { AuthResponse } from './models/auth-response.model';
 import { IdentidadResponse } from './models/identidad-response.model';
 import { LoginRequest } from './models/login-request.model';
@@ -61,6 +62,24 @@ export class AuthApiService {
         this.invalidateSessionCheck();
         this.csrfToken.invalidate();
         this.sessionStateValue.set({ status: 'loading' });
+      }),
+    );
+  }
+
+  updateProfile(
+    request: ActualizarPerfilRequest,
+  ): Observable<IdentidadResponse> {
+    const body: ActualizarPerfilRequest = {
+      nombre: request.nombre,
+      ...(request.telefono !== undefined
+        ? { telefono: request.telefono }
+        : {}),
+    };
+
+    return this.http.patch<IdentidadResponse>(`${this.endpoint}/me`, body).pipe(
+      tap((identity) => {
+        this.invalidateSessionCheck();
+        this.sessionStateValue.set({ status: 'authenticated', identity });
       }),
     );
   }

@@ -120,7 +120,12 @@
         </fieldset>
 
         @if (errorMessage(); as message) {
-          <p class="auth-feedback auth-feedback--error" role="alert">{{ message }}</p>
+          <div class="auth-feedback auth-feedback--error" role="alert">
+            <p>{{ message }}</p>
+            @if (emailConflict()) {
+              <a routerLink="/login">¿Ya tienes una cuenta? Inicia sesión</a>
+            }
+          </div>
         }
 
         <button

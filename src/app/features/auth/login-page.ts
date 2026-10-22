@@ -6,12 +6,14 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, switchMap } from 'rxjs';
 import { AuthApiService } from '../../core/auth/auth-api.service';
 import { getAuthErrorMessage } from '../../core/auth/auth-error-message';
 import { emailFormatValidator, nonWhitespaceValidator } from '../../core/auth/auth-form.validators';
+import { readReservationDraft } from '../reservation/reservation-draft';
 import { SiteFooter } from '../../shared/site-footer/site-footer';
 import { SiteHeader } from '../../shared/site-header/site-header';
 
@@ -24,7 +26,9 @@ import { SiteHeader } from '../../shared/site-header/site-header';
 export class LoginPage {
   private readonly authApi = inject(AuthApiService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly location = inject(Location);
   private readonly router = inject(Router);
+  private readonly reservationDraft = readReservationDraft(this.location.getState());
   protected readonly isSubmitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly form = new FormGroup({
@@ -93,7 +97,13 @@ export class LoginPage {
             return;
           }
 
-          void this.router.navigateByUrl('/reservar');
+          if (this.reservationDraft === null) {
+            void this.router.navigateByUrl('/reservar');
+          } else {
+            void this.router.navigateByUrl('/reservar', {
+              state: { reservationDraft: this.reservationDraft },
+            });
+          }
         },
         error: (error: unknown) => {
           this.errorMessage.set(

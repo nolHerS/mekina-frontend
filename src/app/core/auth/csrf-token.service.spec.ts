@@ -70,4 +70,42 @@ describe('CsrfTokenService', () => {
     expect(refreshedRequest.request.method).toBe('GET');
     refreshedRequest.flush({ token: 'second-token' });
   });
+
+  it('renews the token explicitly and shares concurrent refresh requests', () => {
+    const service = TestBed.inject(CsrfTokenService);
+    service.getToken().subscribe();
+    TestBed.inject(HttpTestingController)
+      .expectOne(endpoint)
+      .flush({ token: 'first-token' });
+
+    const received: string[] = [];
+    service.refreshToken().subscribe((token) => received.push(token));
+    service.refreshToken().subscribe((token) => received.push(token));
+
+    const refreshedRequest = TestBed.inject(HttpTestingController).expectOne(endpoint);
+    refreshedRequest.flush({ token: 'renewed-token' });
+
+    expect(received).toEqual(['renewed-token', 'renewed-token']);
+    service.getToken().subscribe((token) => received.push(token));
+    expect(received[2]).toBe('renewed-token');
+    TestBed.inject(HttpTestingController).expectNone(endpoint);
+  });
+
+  it('does not let a late response overwrite a more recent token', () => {
+    const service = TestBed.inject(CsrfTokenService);
+    let originalToken: string | undefined;
+    let renewedToken: string | undefined;
+    service.getToken().subscribe((token) => (originalToken = token));
+    const originalRequest = TestBed.inject(HttpTestingController).expectOne(endpoint);
+
+    service.refreshToken().subscribe((token) => (renewedToken = token));
+    const refreshedRequest = TestBed.inject(HttpTestingController).expectOne(endpoint);
+    refreshedRequest.flush({ token: 'new-token' });
+    originalRequest.flush({ token: 'late-old-token' });
+
+    service.getToken().subscribe((token) => (renewedToken = token));
+    expect(originalToken).toBe('late-old-token');
+    expect(renewedToken).toBe('new-token');
+    TestBed.inject(HttpTestingController).expectNone(endpoint);
+  });
 });
