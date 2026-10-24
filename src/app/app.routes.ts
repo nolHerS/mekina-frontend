@@ -14,6 +14,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'mis-reservas',
+    loadComponent: () =>
+      import('./features/customer-bookings/customer-bookings-page').then(
+        (module) => module.CustomerBookingsPage,
+      ),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/login-page').then((module) => module.LoginPage),

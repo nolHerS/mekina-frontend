@@ -84,6 +84,15 @@
         <span class="primary-navigation__session-name">
           {{ session.identity.nombre }}
         </span>
+        @if (session.identity.roles.includes('CUSTOMER')) {
+          <a
+            class="primary-navigation__auth-link"
+            routerLink="/mis-reservas"
+            (click)="closeMenu()"
+          >
+            Mis reservas
+          </a>
+        }
         <button
           class="primary-navigation__logout"
           type="button"

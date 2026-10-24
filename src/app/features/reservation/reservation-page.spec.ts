@@ -962,6 +962,11 @@ describe('ReservationPage', () => {
     expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent)
       .toContain('No se pudo confirmar el resultado de la reserva');
     expect(fixture.nativeElement.querySelector('.reservation__confirmation')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector(
+        '.reservation__retry[routerlink="/mis-reservas"]',
+      )?.textContent,
+    ).toContain('Consultar reservas existentes');
     expect(fixture.nativeElement.querySelector('.reservation__selected-list')?.textContent)
       .toContain('10:00:00');
     expect(

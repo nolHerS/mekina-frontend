@@ -14,7 +14,7 @@
       @if (sessionWarning(); as warning) {
         <div class="auth-feedback auth-feedback--notice" role="status">
           <p>{{ warning }}</p>
-          <a routerLink="/login">Ir a iniciar sesión</a>
+          <a href="/login" (click)="navigateToLogin($event)">Ir a iniciar sesión</a>
         </div>
       }
 
@@ -123,7 +123,9 @@
           <div class="auth-feedback auth-feedback--error" role="alert">
             <p>{{ message }}</p>
             @if (emailConflict()) {
-              <a routerLink="/login">¿Ya tienes una cuenta? Inicia sesión</a>
+              <a href="/login" (click)="navigateToLogin($event)">
+                ¿Ya tienes una cuenta? Inicia sesión
+              </a>
             }
           </div>
         }
@@ -138,7 +140,8 @@
       </form>
 
       <p class="auth-card__switch">
-        ¿Ya tienes una cuenta? <a routerLink="/login">Iniciar sesión</a>
+        ¿Ya tienes una cuenta?
+        <a href="/login" (click)="navigateToLogin($event)">Iniciar sesión</a>
       </p>
     </section>
   </div>

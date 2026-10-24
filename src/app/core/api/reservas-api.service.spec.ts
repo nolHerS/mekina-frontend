@@ -104,4 +104,75 @@ describe('ReservasApiService', () => {
     expect(receivedStatus).toBe(409);
     http.expectNone(endpoint);
   });
+
+  it('sends a bodyless DELETE with shared credentials and CSRF and accepts 204', () => {
+    const reservationId = '00000000-0000-0000-0000-000000000201';
+    let responseStatus: number | undefined;
+    let responseBody: void | null | undefined;
+
+    TestBed.inject(ReservasApiService)
+      .cancelarReserva(reservationId)
+      .subscribe((response) => {
+        responseStatus = response.status;
+        responseBody = response.body;
+      });
+
+    const http = TestBed.inject(HttpTestingController);
+    const csrfRequest = http.expectOne(`${API_BASE_URL}/api/auth/csrf`);
+    expect(csrfRequest.request.method).toBe('GET');
+    csrfRequest.flush({ token: 'csrf-token' });
+
+    const request = http.expectOne(`${endpoint}/${reservationId}`);
+    expect(request.request.method).toBe('DELETE');
+    expect(request.request.body).toBeNull();
+    expect(request.request.withCredentials).toBe(true);
+    expect(request.request.headers.get('X-CSRF-TOKEN')).toBe('csrf-token');
+    request.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(responseStatus).toBe(204);
+    expect(responseBody).toBeNull();
+    http.expectNone(`${endpoint}/${reservationId}`);
+  });
+
+  it.each([
+    [400, 'Bad Request'],
+    [401, 'Unauthorized'],
+    [403, 'Forbidden'],
+    [404, 'Not Found'],
+    [409, 'Conflict'],
+  ])('propagates DELETE HTTP %s without retrying', (status, statusText) => {
+    const reservationId = `00000000-0000-0000-0000-0000000002${status}`;
+    let receivedStatus: number | undefined;
+    const service = TestBed.inject(ReservasApiService);
+    const http = TestBed.inject(HttpTestingController);
+
+    service.cancelarReserva(reservationId).subscribe({
+      error: (error: { status: number }) => (receivedStatus = error.status),
+    });
+    http.expectOne(`${API_BASE_URL}/api/auth/csrf`).flush({ token: 'csrf-token' });
+    const request = http.expectOne(`${endpoint}/${reservationId}`);
+    request.flush(
+      { error: 'No exponer detalles internos' },
+      { status, statusText },
+    );
+
+    expect(receivedStatus).toBe(status);
+    http.expectNone(`${endpoint}/${reservationId}`);
+  });
+
+  it('propagates network failure without retrying the DELETE', () => {
+    const reservationId = '00000000-0000-0000-0000-000000000299';
+    let receivedStatus: number | undefined;
+    const service = TestBed.inject(ReservasApiService);
+    const http = TestBed.inject(HttpTestingController);
+
+    service.cancelarReserva(reservationId).subscribe({
+      error: (error: { status: number }) => (receivedStatus = error.status),
+    });
+    http.expectOne(`${API_BASE_URL}/api/auth/csrf`).flush({ token: 'csrf-token' });
+    http.expectOne(`${endpoint}/${reservationId}`).error(new ProgressEvent('error'));
+
+    expect(receivedStatus).toBe(0);
+    http.expectNone(`${endpoint}/${reservationId}`);
+  });
 });

@@ -83,6 +83,7 @@ describe('SiteHeader', () => {
     logoutResponse = response.asObservable();
 
     expect(fixture.nativeElement.textContent).toContain('Cliente');
+    expect(fixture.nativeElement.querySelector('a[routerlink="/mis-reservas"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('button.primary-navigation__logout')).toBeTruthy();
     expect(fixture.nativeElement.querySelector('a[routerlink="/login"]')).toBeNull();
 
@@ -166,6 +167,23 @@ describe('SiteHeader', () => {
     expect(logoutCalls).toBe(2);
     expect(sessionState()).toEqual({ status: 'anonymous' });
     expect(navigateSpy).toHaveBeenCalledWith('/');
+  });
+
+  it('does not show customer bookings to an authenticated non-customer', () => {
+    const fixture = createHeader();
+    sessionState.set({
+      status: 'authenticated',
+      identity: {
+        id: '00000000-0000-0000-0000-000000000002',
+        nombre: 'Profesional',
+        correoElectronico: 'profesional@example.test',
+        telefono: null,
+        roles: ['BARBER'],
+      },
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('a[routerlink="/mis-reservas"]')).toBeNull();
   });
 
   it('opens, closes, and restores focus for the mobile navigation', () => {

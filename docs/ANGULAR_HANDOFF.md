@@ -318,13 +318,63 @@ El frontend:
   que el usuario declare que comprobo por otro canal que no se creo una
   reserva. Esto no verifica el resultado en el backend.
 
-El backend documenta `GET /api/reservas/mias` para clientes, pero el frontend
-actual no implementa un servicio o pantalla para consultar esa lista. Por
-tanto, esta interfaz no puede verificar si una respuesta incierta creo una
-reserva; el usuario debe comprobarlo por otro canal o contactar con la
-barberia antes de volver a intentarlo. El bloqueo se mantiene en el estado de
-la pagina actual y no sobrevive a una recarga del navegador; no debe
-presentarse como una verificacion persistente. No se ha confirmado una
+El frontend incluye la ruta lazy `/mis-reservas`. Antes de solicitar datos
+consulta el estado compartido de `AuthApiService` y solo llama al endpoint
+para una identidad con rol `CUSTOMER`. La vista no muestra datos durante la
+comprobacion, si la sesion es anonima o si el rol no corresponde. Una respuesta
+`401` durante la consulta provoca una nueva comprobacion con `/api/auth/me`;
+un `403` se conserva como problema de autorizacion, no como sesion cerrada.
+La consulta usa `pagina` y `limite` (por defecto 0 y 20; el backend permite
+limites de 1 a 50) y presenta campos de la respuesta, agrupando reservas por
+si su inicio es pasado o futuro.
+
+La implementación backend pagina primero identificadores únicos de reserva
+en una CTE y después carga todos los servicios asociados. La prueba
+`paginatesOwnReservationsByUniqueReservationWithAllServices` verifica que una
+reserva con varios servicios no se divide entre páginas. Esta evidencia es del
+código y las pruebas del backend; no equivale a una prueba de integración
+ejecutada desde el frontend contra Docker.
+
+### Cancelación desde «Mis reservas»
+
+Angular implementa `DELETE /api/reservas/{id}` sin cuerpo y solo considera
+confirmada la operación ante el estado `204`. El botón solicita confirmación
+explícita y se bloquean las acciones mientras hay una mutación pendiente. Tras
+el `204`, la lista se vuelve a consultar al servidor; la interfaz no marca la
+cita como cancelada de forma optimista.
+
+El backend limita la cancelación al propietario CUSTOMER y a reservas en
+estados permitidos con al menos 24 horas de antelación; el backend sigue siendo
+la autoridad y puede rechazarla. Angular diferencia `400`, `401`, `403`,
+`404` y `409`; un `401` provoca una comprobación de sesión, mientras que un
+`403` no cierra la sesión automáticamente.
+
+La pérdida de red, los estados `5xx`, otros errores no reconocidos y una
+respuesta de éxito distinta de `204` se tratan como resultado incierto. No se
+repite el `DELETE` ni se muestra una cancelación confirmada. Las acciones de
+mutación quedan bloqueadas hasta que el usuario solicite una consulta GET
+explícita de la lista; esta consulta muestra el estado actual, pero no prueba
+por sí sola si el intento previo causó el cambio.
+
+La reprogramación no está implementada en Angular. Aunque el backend documenta
+`PATCH /api/reservas/{id}/horario`, `ReservaPropiaResponse` no expone
+`profesionalId` ni los identificadores UUID de los servicios que requiere
+`GET /api/disponibilidad`. Inferirlos de nombres o de otros datos no sería
+seguro. Se requiere un contrato backend verificado que aporte esos
+identificadores antes de construir el flujo de reprogramación; no se ha
+añadido un método PATCH ni una interfaz parcial.
+
+Ante un resultado incierto de `POST /api/reservas`, la pantalla de reserva
+ofrece abrir `/mis-reservas` para revisar las reservas existentes. Esa lista
+no permite vincular inequívocamente una reserva con una solicitud concreta;
+una coincidencia de fecha/hora no demuestra que el POST previo la haya creado.
+El usuario debe comprobar la lista y, si el resultado sigue sin aclararse,
+contactar con la barberia antes de volver a intentarlo. La API no documenta
+una clave de idempotencia ni una consulta que reconcilie un intento
+individual. El bloqueo de reenvio del POST sigue siendo temporal a la pagina y
+no sobrevive a una recarga.
+
+Las pruebas frontend usan `HttpTestingController`; no confirman una
 integracion real con el backend, cookies, CSRF o PostgreSQL.
 
 El envio en produccion permanece bloqueado mientras no se configure un texto

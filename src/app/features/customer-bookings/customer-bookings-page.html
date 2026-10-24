@@ -1,0 +1,313 @@
+<app-site-header />
+
+<main class="customer-bookings" id="contenido" tabindex="-1">
+  <div class="customer-bookings__inner section-wrap">
+    <header class="customer-bookings__heading">
+      <p class="eyebrow"><span aria-hidden="true"></span> Tu espacio Mekina</p>
+      <h1 #bookingsHeading tabindex="-1">Mis <em>reservas.</em></h1>
+      <p>Consulta las citas asociadas a tu cuenta.</p>
+    </header>
+
+    @if (cancellationFeedback(); as feedback) {
+      <section
+        class="customer-bookings__feedback"
+        [class.customer-bookings__feedback--error]="feedback.kind === 'error'"
+        [attr.role]="feedback.kind === 'error' ? 'alert' : 'status'"
+        aria-live="polite"
+      >
+        <p>{{ feedback.message }}</p>
+        @if (pageState() !== 'anonymous' && pageState() !== 'checking-session') {
+          <button
+            class="customer-bookings__button customer-bookings__button--secondary"
+            type="button"
+            [disabled]="pageState() === 'loading' || cancellationPending()"
+            (click)="refreshReservations()"
+          >
+            Actualizar reservas
+          </button>
+        }
+      </section>
+    }
+
+    @switch (pageState()) {
+      @case ('checking-session') {
+        <p class="customer-bookings__notice" role="status" aria-live="polite">
+          Comprobando tu sesión…
+        </p>
+      }
+      @case ('session-error') {
+        <section
+          class="customer-bookings__notice"
+          aria-labelledby="session-error-title"
+          role="alert"
+        >
+          <h2 id="session-error-title">No se pudo comprobar la sesión</h2>
+          <p>{{ errorMessage() }}</p>
+          <button class="customer-bookings__button" type="button" (click)="retry()">
+            Volver a comprobar
+          </button>
+        </section>
+      }
+      @case ('anonymous') {
+        <section class="customer-bookings__notice" aria-labelledby="anonymous-title">
+          <h2 id="anonymous-title">Inicia sesión para consultar tus reservas</h2>
+          <p>Esta sección solo muestra las reservas de la cuenta autenticada.</p>
+          <div class="customer-bookings__actions">
+            <a
+              class="customer-bookings__button"
+              href="/login"
+              (click)="navigateToLogin($event)"
+            >
+              Iniciar sesión
+            </a>
+            <a
+              class="customer-bookings__button customer-bookings__button--secondary"
+              href="/registro"
+              (click)="navigateToRegistration($event)"
+            >
+              Crear cuenta
+            </a>
+          </div>
+        </section>
+      }
+      @case ('forbidden') {
+        <section class="customer-bookings__notice" aria-labelledby="forbidden-title">
+          <h2 id="forbidden-title">Acceso no disponible</h2>
+          <p>Esta sección está disponible para clientes. No se han consultado reservas.</p>
+        </section>
+      }
+      @case ('loading') {
+        <p class="customer-bookings__notice" role="status" aria-live="polite">
+          Cargando tus reservas…
+        </p>
+      }
+      @case ('error') {
+        <section
+          class="customer-bookings__notice"
+          aria-labelledby="bookings-error-title"
+          role="alert"
+        >
+          <h2 id="bookings-error-title">No se pudieron cargar tus reservas</h2>
+          <p>{{ errorMessage() }}</p>
+          <button
+            class="customer-bookings__button"
+            type="button"
+            (click)="retry()"
+          >
+            Volver a cargar
+          </button>
+        </section>
+      }
+      @case ('ready') {
+        @if (bookings(); as response) {
+          @if (response.total === 0) {
+            <section class="customer-bookings__notice" aria-labelledby="empty-title">
+              <h2 id="empty-title">Todavía no tienes reservas</h2>
+              <p>Cuando reserves una cita, podrás consultarla aquí.</p>
+              <a class="customer-bookings__button" routerLink="/reservar">
+                Ver disponibilidad
+              </a>
+            </section>
+          } @else {
+            <p class="customer-bookings__summary" role="status">
+              {{ response.total }} {{ response.total === 1 ? 'reserva' : 'reservas' }}
+              en tu cuenta
+            </p>
+
+            @if (futureReservations().length > 0) {
+              <section
+                class="customer-bookings__group"
+                aria-labelledby="future-title"
+              >
+                <h2 id="future-title">Reservas con inicio futuro</h2>
+                <div class="customer-bookings__list">
+                  @for (
+                    reservation of futureReservations();
+                    track trackReservation($index, reservation)
+                  ) {
+                    <article class="booking-card">
+                      <header class="booking-card__header">
+                        <h3>{{ formatReservationDate(reservation.empiezaEn, reservation.zonaHoraria) }}</h3>
+                        <span class="booking-card__status">{{ reservation.estado }}</span>
+                      </header>
+                      <p class="booking-card__end">
+                        Finaliza {{ formatReservationDate(reservation.terminaEn, reservation.zonaHoraria) }}
+                      </p>
+                      <ul class="booking-card__services">
+                        @for (service of reservation.servicios; track $index) {
+                          <li>
+                            <span>{{ service.nombre }}</span>
+                            <span>{{ formatPrice(service.precio) }} · {{ service.duracionMinutos }} min</span>
+                          </li>
+                        }
+                      </ul>
+                      <dl class="booking-card__totals">
+                        <div>
+                          <dt>Duración total</dt>
+                          <dd>{{ reservation.duracionTotalMinutos }} min</dd>
+                        </div>
+                        <div>
+                          <dt>Precio total</dt>
+                          <dd>{{ formatPrice(reservation.precioTotal) }}</dd>
+                        </div>
+                      </dl>
+                      <div class="booking-card__actions">
+                        @if (canOfferCancellation(reservation)) {
+                          <button
+                            class="customer-bookings__button customer-bookings__button--secondary"
+                            type="button"
+                            [disabled]="actionsDisabled()"
+                            (click)="requestCancellation(reservation, $event)"
+                          >
+                            Cancelar cita
+                          </button>
+                        } @else {
+                          <p class="booking-card__no-actions">
+                            No hay acciones disponibles para esta reserva.
+                          </p>
+                        }
+                      </div>
+                    </article>
+                  }
+                </div>
+              </section>
+            }
+
+            @if (pastReservations().length > 0) {
+              <section
+                class="customer-bookings__group"
+                aria-labelledby="past-title"
+              >
+                <h2 id="past-title">Reservas con inicio pasado</h2>
+                <div class="customer-bookings__list">
+                  @for (
+                    reservation of pastReservations();
+                    track trackReservation($index, reservation)
+                  ) {
+                    <article class="booking-card">
+                      <header class="booking-card__header">
+                        <h3>{{ formatReservationDate(reservation.empiezaEn, reservation.zonaHoraria) }}</h3>
+                        <span class="booking-card__status">{{ reservation.estado }}</span>
+                      </header>
+                      <p class="booking-card__end">
+                        Finalizó {{ formatReservationDate(reservation.terminaEn, reservation.zonaHoraria) }}
+                      </p>
+                      <ul class="booking-card__services">
+                        @for (service of reservation.servicios; track $index) {
+                          <li>
+                            <span>{{ service.nombre }}</span>
+                            <span>{{ formatPrice(service.precio) }} · {{ service.duracionMinutos }} min</span>
+                          </li>
+                        }
+                      </ul>
+                      <dl class="booking-card__totals">
+                        <div>
+                          <dt>Duración total</dt>
+                          <dd>{{ reservation.duracionTotalMinutos }} min</dd>
+                        </div>
+                        <div>
+                          <dt>Precio total</dt>
+                          <dd>{{ formatPrice(reservation.precioTotal) }}</dd>
+                        </div>
+                      </dl>
+                      <div class="booking-card__actions">
+                        @if (canOfferCancellation(reservation)) {
+                          <button
+                            class="customer-bookings__button customer-bookings__button--secondary"
+                            type="button"
+                            [disabled]="actionsDisabled()"
+                            (click)="requestCancellation(reservation, $event)"
+                          >
+                            Cancelar cita
+                          </button>
+                        } @else {
+                          <p class="booking-card__no-actions">
+                            No hay acciones disponibles para esta reserva.
+                          </p>
+                        }
+                      </div>
+                    </article>
+                  }
+                </div>
+              </section>
+            }
+
+            <nav class="customer-bookings__pagination" aria-label="Paginación de reservas">
+              <button
+                class="customer-bookings__button customer-bookings__button--secondary"
+                type="button"
+                [disabled]="response.pagina === 0 || actionsDisabled()"
+                (click)="loadPreviousPage()"
+              >
+                Anterior
+              </button>
+              <span>Página {{ response.pagina + 1 }}</span>
+              <button
+                class="customer-bookings__button customer-bookings__button--secondary"
+                type="button"
+                [disabled]="!hasNextPage() || actionsDisabled()"
+                (click)="loadNextPage()"
+              >
+                Siguiente
+              </button>
+            </nav>
+          }
+        }
+      }
+    }
+
+    @if (cancellationTarget(); as reservation) {
+      <div
+        class="customer-bookings__dialog-layer"
+        (click)="handleDialogBackdropClick($event)"
+      >
+        <section
+          #cancelDialog
+          class="customer-bookings__dialog"
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="cancel-dialog-title"
+          aria-describedby="cancel-dialog-description"
+          tabindex="-1"
+          (click)="$event.stopPropagation()"
+          (keydown)="handleDialogKeydown($event)"
+        >
+          <p class="eyebrow"><span aria-hidden="true"></span> Gestión de cita</p>
+          <h2 id="cancel-dialog-title">Confirmar cancelación</h2>
+          <p id="cancel-dialog-description">
+            ¿Quieres solicitar la cancelación de esta cita?
+          </p>
+          <p>
+            {{ formatReservationDate(reservation.empiezaEn, reservation.zonaHoraria) }}
+          </p>
+          <p class="customer-bookings__dialog-warning">
+            La cancelación puede ser irreversible. El servidor comprobará si esta reserva aún puede cancelarse.
+          </p>
+          <div class="customer-bookings__actions">
+            <button
+              class="customer-bookings__button customer-bookings__button--secondary"
+              type="button"
+              [disabled]="cancellationPending()"
+              (click)="dismissCancellation()"
+            >
+              Volver
+            </button>
+            <button
+              #cancelConfirmButton
+              id="cancelConfirmButton"
+              class="customer-bookings__button"
+              type="button"
+              [disabled]="cancellationPending()"
+              [attr.aria-busy]="cancellationPending()"
+              (click)="confirmCancellation()"
+            >
+              {{ cancellationPending() ? 'Cancelando…' : 'Confirmar cancelación' }}
+            </button>
+          </div>
+        </section>
+      </div>
+    }
+  </div>
+</main>
+
+<app-site-footer />

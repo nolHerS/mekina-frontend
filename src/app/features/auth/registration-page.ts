@@ -8,18 +8,22 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize, switchMap, tap } from 'rxjs';
 import { AuthApiService } from '../../core/auth/auth-api.service';
 import { emailFormatValidator, nonWhitespaceValidator } from '../../core/auth/auth-form.validators';
 import { RegistroRequest } from '../../core/auth/models/registro-request.model';
 import { readReservationDraft } from '../reservation/reservation-draft';
+import {
+  CUSTOMER_BOOKINGS_PATH,
+  readPostAuthReturnTo,
+} from './auth-return-path';
 import { SiteFooter } from '../../shared/site-footer/site-footer';
 import { SiteHeader } from '../../shared/site-header/site-header';
 
 @Component({
-  imports: [ReactiveFormsModule, RouterLink, SiteFooter, SiteHeader],
+  imports: [ReactiveFormsModule, SiteFooter, SiteHeader],
   selector: 'app-registration-page',
   styleUrl: './auth-page.scss',
   templateUrl: './registration-page.html',
@@ -29,7 +33,13 @@ export class RegistrationPage {
   private readonly destroyRef = inject(DestroyRef);
   private readonly location = inject(Location);
   private readonly router = inject(Router);
-  private readonly reservationDraft = readReservationDraft(this.location.getState());
+  private readonly locationState = this.location.getState();
+  private readonly reservationDraft = readReservationDraft(this.locationState);
+  private readonly postAuthReturnTo = readPostAuthReturnTo(this.locationState);
+  protected readonly loginNavigationState =
+    this.postAuthReturnTo === CUSTOMER_BOOKINGS_PATH
+      ? { returnTo: CUSTOMER_BOOKINGS_PATH }
+      : undefined;
   protected readonly isSubmitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly emailConflict = signal(false);
@@ -96,6 +106,26 @@ export class RegistrationPage {
     return 'Revisa este campo.';
   }
 
+  protected navigateToLogin(event: MouseEvent): void {
+    if (
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    void this.router.navigateByUrl(
+      '/login',
+      this.loginNavigationState === undefined
+        ? undefined
+        : { state: this.loginNavigationState },
+    );
+  }
+
   protected submit(): void {
     if (this.isSubmitting() || this.sessionWarning() !== null) {
       return;
@@ -141,14 +171,20 @@ export class RegistrationPage {
             return;
           }
 
-          void this.router.navigateByUrl('/reservar', {
-            state: {
-              registrationWelcome: true,
-              ...(this.reservationDraft === null
-                ? {}
-                : { reservationDraft: this.reservationDraft }),
-            },
-          });
+          if (this.reservationDraft !== null) {
+            void this.router.navigateByUrl('/reservar', {
+              state: {
+                registrationWelcome: true,
+                reservationDraft: this.reservationDraft,
+              },
+            });
+          } else if (this.postAuthReturnTo !== null) {
+            void this.router.navigateByUrl(this.postAuthReturnTo);
+          } else {
+            void this.router.navigateByUrl('/reservar', {
+              state: { registrationWelcome: true },
+            });
+          }
         },
         error: (error: unknown) => {
           if (registrationSucceeded) {

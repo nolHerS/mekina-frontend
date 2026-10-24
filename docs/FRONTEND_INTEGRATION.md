@@ -423,6 +423,30 @@ Respuesta `200`:
 
 La respuesta usa snapshots históricos, no el catálogo actual. El backend verifica ownership; el frontend no debe intentar consultar reservas de otro cliente cambiando un ID.
 
+El frontend implementa una vista standalone en `/mis-reservas` y un enlace en
+la cabecera visible únicamente para identidades con rol `CUSTOMER`. La pantalla
+reutiliza la sesión compartida, consulta la lista paginada solo después de
+confirmar ese rol y no presenta datos privados a usuarios anónimos o con otro
+rol. El `401` durante la carga provoca una nueva comprobación de sesión; el
+`403` se comunica como un problema de autorización. Las pruebas de esta capa
+son simuladas y no verifican una integración real con el backend ni con
+PostgreSQL.
+
+La lista permite revisar reservas existentes después de un resultado incierto
+de creación, pero no identifica de forma inequívoca qué solicitud creó una
+reserva. No debe concluirse que una cita concreta corresponde a un POST
+fallido solo porque coincidan fecha y hora. Si la lista no aclara el resultado,
+el cliente debe contactar con la barbería antes de intentar crear otra cita;
+no existe una clave de idempotencia ni un endpoint documentado de
+reconciliación por intento.
+
+Durante la inspección del repositorio backend, el listado construye las
+reservas desde un `LEFT JOIN` y aplica `LIMIT/OFFSET` sobre ese resultado
+unido. Cuando una reserva incluye varios servicios, esto puede partir una
+reserva entre páginas o devolver menos reservas que el límite solicitado.
+Debe corregirse o confirmarse en el backend; el frontend presenta cada
+respuesta sin intentar reconstruir páginas a partir de datos incompletos.
+
 ### 5.3 Cancelar
 
 `DELETE /api/reservas/{id}` requiere `CUSTOMER` y CSRF. Respuesta correcta: `204 No Content`.

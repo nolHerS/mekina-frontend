@@ -83,7 +83,7 @@ describe('LoginPage', () => {
     expect(
       (root.querySelector('#login-remember') as HTMLInputElement).checked,
     ).toBe(false);
-    expect(root.querySelector('a[routerlink="/registro"]')).toBeTruthy();
+    expect(root.querySelector('a[href="/registro"]')).toBeTruthy();
   });
 
   it('shows field validation and does not submit invalid values', () => {
@@ -197,6 +197,26 @@ describe('LoginPage', () => {
     expect(navigateSpy).toHaveBeenCalledWith('/reservar', {
       state: { reservationDraft },
     });
+  });
+
+  it('returns to the requested customer bookings page after confirmed login', async () => {
+    vi.spyOn(TestBed.inject(Location), 'getState').mockReturnValue({
+      returnTo: '/mis-reservas',
+    });
+    const fixture = createPage();
+    const navigateSpy = vi
+      .spyOn(TestBed.inject(Router), 'navigateByUrl')
+      .mockResolvedValue(true);
+    fillForm(fixture);
+    submitForm(fixture);
+
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(`${authEndpoint}/csrf`).flush({ token: 'csrf-token' });
+    http.expectOne(`${authEndpoint}/login`).flush(authResponse);
+    http.expectOne(`${authEndpoint}/me`).flush(identity);
+    await fixture.whenStable();
+
+    expect(navigateSpy).toHaveBeenCalledWith('/mis-reservas');
   });
 
   it('shows useful HTTP errors without assuming a uniform response body', () => {

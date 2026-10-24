@@ -17,4 +17,11 @@ export class ReservasApiService {
       observe: 'response',
     });
   }
+
+  cancelarReserva(id: string): Observable<HttpResponse<void>> {
+    return this.http.delete<void>(
+      `${this.endpoint}/${encodeURIComponent(id)}`,
+      { observe: 'response' },
+    );
+  }
 }

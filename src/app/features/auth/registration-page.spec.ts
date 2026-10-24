@@ -92,7 +92,7 @@ describe('RegistrationPage', () => {
     expect(
       (root.querySelector('#registration-password') as HTMLInputElement).maxLength,
     ).toBe(72);
-    expect(root.querySelector('a[routerlink="/login"]')).toBeTruthy();
+    expect(root.querySelector('a[href="/login"]')).toBeTruthy();
   });
 
   it('shows validation errors and prevents a request for invalid fields', () => {
@@ -180,7 +180,7 @@ describe('RegistrationPage', () => {
     expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain(
       'Tu cuenta se creó, pero no pudimos confirmar la sesión',
     );
-    expect(fixture.nativeElement.querySelector('a[routerlink="/login"]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('a[href="/login"]')).toBeTruthy();
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
@@ -215,6 +215,29 @@ describe('RegistrationPage', () => {
     });
   });
 
+  it('returns to customer bookings after confirmed registration when requested', async () => {
+    vi.spyOn(TestBed.inject(Location), 'getState').mockReturnValue({
+      returnTo: '/mis-reservas',
+    });
+    const fixture = createPage();
+    const navigateSpy = vi
+      .spyOn(TestBed.inject(Router), 'navigateByUrl')
+      .mockResolvedValue(true);
+    fillForm(fixture);
+    submitForm(fixture);
+
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne(`${authEndpoint}/csrf`).flush({ token: 'csrf-token' });
+    http.expectOne(`${authEndpoint}/registro`).flush(authResponse, {
+      status: 201,
+      statusText: 'Created',
+    });
+    http.expectOne(`${authEndpoint}/me`).flush(identity);
+    await fixture.whenStable();
+
+    expect(navigateSpy).toHaveBeenCalledWith('/mis-reservas');
+  });
+
   it('shows a clear duplicate-email message and login link without exposing backend details', () => {
     const fixture = createPage();
     fillForm(fixture);
@@ -233,7 +256,7 @@ describe('RegistrationPage', () => {
     );
     expect(alert?.textContent).not.toContain('No se puede completar el registro');
     expect(
-      (alert?.querySelector('a[routerlink="/login"]') as HTMLAnchorElement).textContent,
+      (alert?.querySelector('a[href="/login"]') as HTMLAnchorElement).textContent,
     ).toContain('¿Ya tienes una cuenta? Inicia sesión');
     expect(
       (fixture.nativeElement.querySelector('#registration-name') as HTMLInputElement)
@@ -267,7 +290,7 @@ describe('RegistrationPage', () => {
       'Revisa los datos introducidos e inténtalo de nuevo.',
     );
     expect(alert?.textContent).not.toContain('internal.validation.stack.trace');
-    expect(alert?.querySelector('a[routerlink="/login"]')).toBeNull();
+    expect(alert?.querySelector('a[href="/login"]')).toBeNull();
     expect(
       (fixture.nativeElement.querySelector('#registration-password') as HTMLInputElement)
         .value,
@@ -295,6 +318,6 @@ describe('RegistrationPage', () => {
       'Has realizado demasiados intentos. Inténtalo de nuevo más tarde.',
     );
     expect(alert?.textContent).not.toContain('Demasiadas solicitudes');
-    expect(alert?.querySelector('a[routerlink="/login"]')).toBeNull();
+    expect(alert?.querySelector('a[href="/login"]')).toBeNull();
   });
 });
